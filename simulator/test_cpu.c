@@ -106,6 +106,31 @@ static void test_timer_irq_rti(void)
     assert((cpu.p & EDU65XX_FLAG_I) == 0u);
 }
 
+static void test_serial_terminal(void)
+{
+    edu65xx_cpu_t cpu = {0};
+
+    /* LDA #'H'; STA $8010; LDA #'i'; STA $8010 */
+    cpu.memory[0xC000] = 0xA9; cpu.memory[0xC001] = 'H';
+    cpu.memory[0xC002] = 0x8D; cpu.memory[0xC003] = 0x10; cpu.memory[0xC004] = 0x80;
+    cpu.memory[0xC005] = 0xA9; cpu.memory[0xC006] = 'i';
+    cpu.memory[0xC007] = 0x8D; cpu.memory[0xC008] = 0x10; cpu.memory[0xC009] = 0x80;
+    set_reset_vector(&cpu, 0xC000u);
+    edu65xx_cpu_reset(&cpu);
+
+    assert(edu65xx_cpu_step(&cpu) == 0);
+    assert(edu65xx_cpu_step(&cpu) == 0);
+    assert(edu65xx_cpu_step(&cpu) == 0);
+    assert(edu65xx_cpu_step(&cpu) == 0);
+    assert(cpu.serial.tx_count == 2u);
+    assert(cpu.serial.tx[0] == 'H');
+    assert(cpu.serial.tx[1] == 'i');
+
+    edu65xx_serial_receive(&cpu.serial, '!');
+    assert((edu65xx_read8(&cpu, 0x8011u) & EDU65XX_SERIAL_RX_READY) != 0u);
+    assert(edu65xx_read8(&cpu, 0x8010u) == '!');
+}
+
 static void test_stack(void)
 {
     edu65xx_cpu_t cpu = {0};
@@ -130,6 +155,7 @@ int main(void)
     test_via_input();
     test_ram_and_rom_write_rules();
     test_timer_irq_rti();
+    test_serial_terminal();
     test_stack();
     puts("edu65xx simulator tests: PASS");
     return 0;
