@@ -4,8 +4,11 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "via.h"
+
 #define EDU65XX_MEM_SIZE 65536u
 #define EDU65XX_BUS_TRACE_MAX 16u
+#define EDU65XX_ROM_BASE 0xC000u
 
 #define EDU65XX_FLAG_C 0x01u
 #define EDU65XX_FLAG_Z 0x02u
@@ -30,6 +33,7 @@ typedef struct {
     uint8_t sp;
     uint8_t p;
     uint8_t memory[EDU65XX_MEM_SIZE];
+    edu65xx_via_t via;
     edu65xx_bus_cycle_t bus_trace[EDU65XX_BUS_TRACE_MAX];
     size_t bus_trace_count;
 } edu65xx_cpu_t;
