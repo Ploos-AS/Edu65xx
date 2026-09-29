@@ -65,6 +65,47 @@ static void test_ram_and_rom_write_rules(void)
     assert(cpu.memory[0xC123] == 0xAAu);
 }
 
+static void test_timer_irq_rti(void)
+{
+    edu65xx_cpu_t cpu = {0};
+
+    cpu.memory[0xC000] = 0x58; /* CLI */
+    cpu.memory[0xC001] = 0xEA; /* NOP: return target */
+    cpu.memory[0xC100] = 0x40; /* RTI */
+    set_reset_vector(&cpu, 0xC000u);
+    cpu.memory[0xFFFE] = 0x00u;
+    cpu.memory[0xFFFF] = 0xC1u;
+
+    edu65xx_cpu_reset(&cpu);
+    assert(edu65xx_cpu_step(&cpu) == 0); /* CLI */
+    assert(cpu.pc == 0xC001u);
+
+    edu65xx_via_write(&cpu.via, 14u, 0xC0u); /* enable T1 IRQ */
+    edu65xx_via_write(&cpu.via, 4u, 0x01u);
+    edu65xx_via_write(&cpu.via, 5u, 0x00u);  /* start at 1 */
+    edu65xx_via_tick(&cpu.via);
+
+    assert((cpu.via.ifr & EDU65XX_VIA_IFR_T1) != 0u);
+    assert(edu65xx_via_irq(&cpu.via));
+
+    assert(edu65xx_cpu_step(&cpu) == 1); /* IRQ entry */
+    assert(cpu.pc == 0xC100u);
+    assert(cpu.sp == 0xFAu);
+    assert(cpu.memory[0x01FD] == 0xC0u); /* return PC high */
+    assert(cpu.memory[0x01FC] == 0x01u); /* return PC low */
+    assert((cpu.memory[0x01FB] & EDU65XX_FLAG_B) == 0u);
+    assert((cpu.p & EDU65XX_FLAG_I) != 0u);
+
+    /* ISR acknowledges Timer 1 before RTI. */
+    (void)edu65xx_via_read(&cpu.via, 4u);
+    assert(!edu65xx_via_irq(&cpu.via));
+
+    assert(edu65xx_cpu_step(&cpu) == 0); /* RTI */
+    assert(cpu.pc == 0xC001u);
+    assert(cpu.sp == 0xFDu);
+    assert((cpu.p & EDU65XX_FLAG_I) == 0u);
+}
+
 static void test_stack(void)
 {
     edu65xx_cpu_t cpu = {0};
@@ -88,6 +129,7 @@ int main(void)
     test_via_gpio();
     test_via_input();
     test_ram_and_rom_write_rules();
+    test_timer_irq_rti();
     test_stack();
     puts("edu65xx simulator tests: PASS");
     return 0;
