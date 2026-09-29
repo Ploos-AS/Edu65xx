@@ -69,6 +69,7 @@ void edu65xx_cpu_reset(edu65xx_cpu_t *cpu)
     cpu->y = 0u;
     cpu->sp = 0xFDu;
     cpu->p = 0x24u;
+    cpu->nmi_pending = 0u;
     edu65xx_via_reset(&cpu->via);
 
     edu65xx_bus_trace_clear(cpu);
@@ -89,7 +90,12 @@ static uint8_t pull8(edu65xx_cpu_t *cpu)
     return edu65xx_read8(cpu, (uint16_t)(0x0100u | cpu->sp));
 }
 
-static void enter_irq(edu65xx_cpu_t *cpu)
+void edu65xx_cpu_request_nmi(edu65xx_cpu_t *cpu)
+{
+    cpu->nmi_pending = 1u;
+}
+
+static void enter_interrupt(edu65xx_cpu_t *cpu, uint16_t vector)
 {
     uint8_t lo;
     uint8_t hi;
@@ -97,8 +103,8 @@ static void enter_irq(edu65xx_cpu_t *cpu)
     push8(cpu, (uint8_t)cpu->pc);
     push8(cpu, (uint8_t)((cpu->p & (uint8_t)~EDU65XX_FLAG_B) | EDU65XX_FLAG_U));
     cpu->p |= EDU65XX_FLAG_I;
-    lo = edu65xx_read8(cpu, 0xFFFEu);
-    hi = edu65xx_read8(cpu, 0xFFFFu);
+    lo = edu65xx_read8(cpu, vector);
+    hi = edu65xx_read8(cpu, (uint16_t)(vector + 1u));
     cpu->pc = (uint16_t)lo | ((uint16_t)hi << 8);
 }
 
@@ -107,8 +113,13 @@ int edu65xx_cpu_step(edu65xx_cpu_t *cpu)
     uint8_t opcode;
 
     edu65xx_bus_trace_clear(cpu);
+    if (cpu->nmi_pending != 0u) {
+        cpu->nmi_pending = 0u;
+        enter_interrupt(cpu, 0xFFFAu);
+        return 2;
+    }
     if (edu65xx_via_irq(&cpu->via) && (cpu->p & EDU65XX_FLAG_I) == 0u) {
-        enter_irq(cpu);
+        enter_interrupt(cpu, 0xFFFEu);
         return 1;
     }
     opcode = fetch8(cpu);
