@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 
+/* Canonical Edu65xx map: RAM $0000-$7FFF, I/O $8000-$BFFF, ROM $C000-$FFFF. */
 #define EDU65XX_VIA_BASE 0x8000u
 #define EDU65XX_VIA_END  0x800Fu
 
