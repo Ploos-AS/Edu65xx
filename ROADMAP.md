@@ -6,10 +6,11 @@
 - [x] Select W65C02S as primary hardware CPU
 - [x] Define assembly-first, C-later teaching model
 - [x] Define C-based simulator and emulator as first-class components
-- [ ] Add initial course lessons
+- [x] Add initial course learning path
+- [x] Add first paired ASM/C example
+- [x] Add simulator CPU state/reset skeleton
+- [x] Define emulator machine scope
 - [ ] Add build/test tooling
-- [ ] Add simulator CPU skeleton
-- [ ] Add emulator machine skeleton
 - [ ] Document breadboard minimum system
 
 ## M1 — CPU fundamentals
