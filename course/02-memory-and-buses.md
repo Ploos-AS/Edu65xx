@@ -1,148 +1,50 @@
 # M2 — Memory and buses
 
-This lesson connects 65C02 instructions to the physical signals and memory locations they use.
+M2 connects instructions to physical addresses and signals.
 
-## 1. One address space
-
-The W65C02S has a 16-bit address bus, so it can address 65,536 byte locations:
+## Canonical Edu65xx map
 
 ```text
-$0000 -------------------
-       RAM
-$7FFF -------------------
-$8000
-       reserved / I/O
-$DFFF -------------------
-$E000
-       ROM
-$FFFF -------------------
+$0000-$7FFF   RAM
+$8000-$BFFF   I/O
+$C000-$FFFF   ROM
 ```
 
-The exact decoding can evolve later, but the important idea is that RAM, ROM and I/O all appear as addresses to the CPU.
+Inside RAM, `$0000-$00FF` is zero page and `$0100-$01FF` is the hardware stack. ROM contains the vectors at the top of the address space.
 
-## 2. The buses
+## Reset vector
 
-The CPU exposes:
+The CPU reads `$FFFC` and `$FFFD` after reset. Edu65xx ROM examples start at `$C000`, so a reset vector for `$C000` contains low byte `$00` followed by high byte `$C0`.
 
-- `A0..A15` — the address bus
-- `D0..D7` — the data bus
-- `R/W` — read or write direction
-- clock and control signals
+The simulator records both reads in its bus trace.
 
-A memory read can be thought of as:
+## Address and data buses
 
-```text
-CPU places address on A0..A15
-        ↓
-address decoder selects a device
-        ↓
-device places a byte on D0..D7
-        ↓
-CPU reads the byte
-```
+The CPU presents an address on `A0..A15`. Address-decoding logic selects RAM, I/O or ROM. Reads return a byte on `D0..D7`; writes drive a byte toward the selected device. `RWB` distinguishes the direction.
 
-A write reverses the data direction.
-
-## 3. Reset vector
-
-After reset, the CPU obtains its starting address from:
-
-- `$FFFC` — low byte
-- `$FFFD` — high byte
-
-If those bytes contain `$00` and `$80`, execution begins at `$8000`.
-
-The Edu65xx simulator models these reads explicitly so they appear in the bus trace.
-
-## 4. Zero page
-
-Addresses `$0000..$00FF` form the zero page.
-
-Compare:
+## Zero page
 
 ```asm
 lda $10
-```
-
-with:
-
-```asm
 lda $2345
 ```
 
-The first uses a one-byte address operand. The second uses a two-byte address operand. Zero-page addressing therefore makes many instructions smaller and often faster.
-
-In the simulator:
+encode differently:
 
 ```text
-A5 10       LDA $10
-AD 45 23    LDA $2345
+A5 10
+AD 45 23
 ```
 
-This is a direct way to see how an addressing mode changes the machine code.
+The first uses a one-byte zero-page address; the second carries a full 16-bit address.
 
-## 5. The stack
+## Stack
 
-The 6502-family hardware stack always lives in page 1:
+The hardware stack always occupies `$0100-$01FF`. With `SP=$FD`, `PHA` writes to `$01FD` and then decrements SP. `PLA` increments SP before reading the value back.
 
-```text
-$0100..$01FF
-```
-
-The stack pointer is only eight bits wide. Its effective address is therefore:
-
-```text
-$0100 | SP
-```
-
-For example, after reset Edu65xx initializes `SP=$FD`. A `PHA` writes the accumulator to `$01FD`, then decrements SP.
-
-A later `PLA` increments SP and reads the value back.
-
-Try this sequence:
-
-```text
-A9 33 48 A9 00 68
-```
-
-which means:
-
-```asm
-lda #$33
-pha
-lda #$00
-pla
-```
-
-After `PLA`, the accumulator contains `$33` again.
-
-## 6. Bus trace
-
-The simulator CLI prints each memory access for every instruction.
+## Bus trace exercise
 
 For:
-
-```asm
-lda #$5A
-sta $10
-```
-
-the interesting accesses conceptually look like:
-
-```text
-R $0000  $A9    opcode fetch
-R $0001  $5A    immediate operand
-
-R $0002  $85    opcode fetch
-R $0003  $10    zero-page address
-W $0010  $5A    data write
-```
-
-This is the bridge between software and the physical computer: the instruction is not abstract. It becomes observable bus activity.
-
-## 7. Exercise — predict before running
-
-Before using the simulator, predict the bus accesses for:
 
 ```asm
 lda #$42
@@ -150,33 +52,6 @@ sta $2345
 lda $2345
 ```
 
-Machine code:
+predict every opcode fetch, operand fetch and data access before comparing your answer with the simulator trace.
 
-```text
-A9 42 8D 45 23 AD 45 23
-```
-
-Then run the simulator and compare your prediction with the trace.
-
-## 8. Exercise — stack tracing
-
-Run:
-
-```text
-A9 7F 48 A9 00 68
-```
-
-Record:
-
-- `A` before and after each instruction
-- `SP` before and after each instruction
-- the address written by `PHA`
-- the address read by `PLA`
-
-Explain why both accesses are in page `$01xx`.
-
-## 9. What this prepares us for
-
-The same read/write mechanism will later be used for memory-mapped peripherals. To the CPU, a VIA register can look like another address in the same 64 KiB address space.
-
-That is the next important step toward a complete Edu65xx computer.
+M3 reuses exactly the same read/write path for the VIA. That is the key idea: to the CPU, a peripheral register is another address.
