@@ -5,6 +5,7 @@
 #include <stdint.h>
 
 #include "via.h"
+#include "serial.h"
 
 #define EDU65XX_MEM_SIZE 65536u
 #define EDU65XX_BUS_TRACE_MAX 16u
@@ -35,6 +36,7 @@ typedef struct {
     uint8_t nmi_pending;
     uint8_t memory[EDU65XX_MEM_SIZE];
     edu65xx_via_t via;
+    edu65xx_serial_t serial;
     edu65xx_bus_cycle_t bus_trace[EDU65XX_BUS_TRACE_MAX];
     size_t bus_trace_count;
 } edu65xx_cpu_t;
