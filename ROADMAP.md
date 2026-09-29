@@ -32,21 +32,29 @@
 
 ## M2 — Memory and buses
 
-- [ ] address/data buses
-- [ ] ROM, RAM, reset vectors
-- [ ] zero page and stack
-- [ ] memory map and address decoding
-- [ ] simulator bus-cycle view
+- [x] Document address/data buses
+- [x] Model ROM/RAM address space and reset vectors
+- [x] Document and exercise zero page and stack
+- [x] Document memory map and address-decoding concept
+- [x] Route simulator memory access through explicit bus reads/writes
+- [x] Add readable simulator bus-cycle trace
+- [x] Add zero-page and absolute LDA/STA instructions
+- [x] Add PHA/PLA stack operations
+- [x] Add automated reset-vector, memory, stack and bus tests
 
-**M2 status: NEXT**
+**M2 status: COMPLETE**
 
 ## M3 — I/O and interrupts
 
-- memory-mapped I/O
-- W65C22 VIA
-- timers
-- IRQ/NMI
-- serial terminal path
+- [ ] define memory-mapped I/O region
+- [ ] model W65C22 VIA registers
+- [ ] GPIO input/output teaching example
+- [ ] timer model and lesson
+- [ ] IRQ/NMI fundamentals
+- [ ] CPU interrupt entry/return path
+- [ ] serial terminal direction
+
+**M3 status: NEXT**
 
 ## M4 — C bridge
 
