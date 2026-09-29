@@ -14,3 +14,11 @@ jobs:
 
       - name: Build and test
         run: make all
+
+      - name: Validate C bridge inputs
+        run: |
+          test -s toolchain/llvm-mos.version
+          test -x scripts/compile-c-to-asm.sh || test -s scripts/compile-c-to-asm.sh
+          grep -q -- '--target=mos' scripts/compile-c-to-asm.sh
+          grep -q -- 'mos65c02' scripts/compile-c-to-asm.sh
+          test -s examples/c/02-memory-mapped-io.c
