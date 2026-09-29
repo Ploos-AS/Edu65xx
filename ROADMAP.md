@@ -46,12 +46,12 @@
 
 ## M3 — I/O and interrupts
 
-- [ ] define memory-mapped I/O region
-- [ ] model W65C22 VIA registers
-- [ ] GPIO input/output teaching example
-- [ ] timer model and lesson
-- [ ] IRQ/NMI fundamentals
-- [ ] CPU interrupt entry/return path
+- [x] define memory-mapped I/O region
+- [x] model W65C22 VIA registers
+- [x] GPIO input/output teaching example
+- [x] timer model and lesson
+- [x] IRQ/NMI fundamentals
+- [x] CPU interrupt entry/return path
 - [ ] serial terminal direction
 
 **M3 status: NEXT**
