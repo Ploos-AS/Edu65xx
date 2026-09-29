@@ -17,10 +17,18 @@
 
 ## M1 — CPU fundamentals
 
-- registers, flags and execution model
-- first 65C02 assembly programs
-- opcodes and machine code
-- simulator register view and single-step execution
+- [x] Document registers, flags and execution model
+- [x] Add first 65C02 assembly examples
+- [x] Introduce opcodes and machine code
+- [x] Implement readable fetch/decode/execute single-step core
+- [x] Implement LDA/LDX/LDY immediate
+- [x] Implement ADC immediate and carry/zero/negative basics
+- [x] Add automated instruction/flag tests
+- [x] Add GitHub Actions build/test CI
+- [ ] Add human-readable register/state trace view
+- [ ] Add a small runnable simulator CLI
+
+**M1 status: IN PROGRESS**
 
 ## M2 — Memory and buses
 
