@@ -25,18 +25,20 @@
 - [x] Implement ADC immediate and carry/zero/negative basics
 - [x] Add automated instruction/flag tests
 - [x] Add GitHub Actions build/test CI
-- [ ] Add human-readable register/state trace view
-- [ ] Add a small runnable simulator CLI
+- [x] Add human-readable register/state trace view
+- [x] Add a small runnable simulator CLI
 
-**M1 status: IN PROGRESS**
+**M1 status: COMPLETE**
 
 ## M2 — Memory and buses
 
-- address/data buses
-- ROM, RAM, reset vectors
-- zero page and stack
-- memory map and address decoding
-- simulator bus-cycle view
+- [ ] address/data buses
+- [ ] ROM, RAM, reset vectors
+- [ ] zero page and stack
+- [ ] memory map and address decoding
+- [ ] simulator bus-cycle view
+
+**M2 status: NEXT**
 
 ## M3 — I/O and interrupts
 
