@@ -77,11 +77,40 @@ void edu65xx_cpu_reset(edu65xx_cpu_t *cpu)
     cpu->pc = (uint16_t)lo | ((uint16_t)hi << 8);
 }
 
+static void push8(edu65xx_cpu_t *cpu, uint8_t value)
+{
+    edu65xx_write8(cpu, (uint16_t)(0x0100u | cpu->sp), value);
+    --cpu->sp;
+}
+
+static uint8_t pull8(edu65xx_cpu_t *cpu)
+{
+    ++cpu->sp;
+    return edu65xx_read8(cpu, (uint16_t)(0x0100u | cpu->sp));
+}
+
+static void enter_irq(edu65xx_cpu_t *cpu)
+{
+    uint8_t lo;
+    uint8_t hi;
+    push8(cpu, (uint8_t)(cpu->pc >> 8));
+    push8(cpu, (uint8_t)cpu->pc);
+    push8(cpu, (uint8_t)((cpu->p & (uint8_t)~EDU65XX_FLAG_B) | EDU65XX_FLAG_U));
+    cpu->p |= EDU65XX_FLAG_I;
+    lo = edu65xx_read8(cpu, 0xFFFEu);
+    hi = edu65xx_read8(cpu, 0xFFFFu);
+    cpu->pc = (uint16_t)lo | ((uint16_t)hi << 8);
+}
+
 int edu65xx_cpu_step(edu65xx_cpu_t *cpu)
 {
     uint8_t opcode;
 
     edu65xx_bus_trace_clear(cpu);
+    if (edu65xx_via_irq(&cpu->via) && (cpu->p & EDU65XX_FLAG_I) == 0u) {
+        enter_irq(cpu);
+        return 1;
+    }
     opcode = fetch8(cpu);
 
     switch (opcode) {
@@ -116,12 +145,22 @@ int edu65xx_cpu_step(edu65xx_cpu_t *cpu)
         cpu->a = (uint8_t)sum; set_nz(cpu, cpu->a); return 0;
     }
     case 0x48:
-        edu65xx_write8(cpu, (uint16_t)(0x0100u | cpu->sp), cpu->a);
-        --cpu->sp; return 0;
+        push8(cpu, cpu->a); return 0;
     case 0x68:
-        ++cpu->sp;
-        cpu->a = edu65xx_read8(cpu, (uint16_t)(0x0100u | cpu->sp));
-        set_nz(cpu, cpu->a); return 0;
+        cpu->a = pull8(cpu); set_nz(cpu, cpu->a); return 0;
+    case 0x40: { /* RTI */
+        uint8_t lo;
+        uint8_t hi;
+        cpu->p = (uint8_t)((pull8(cpu) & (uint8_t)~EDU65XX_FLAG_B) | EDU65XX_FLAG_U);
+        lo = pull8(cpu);
+        hi = pull8(cpu);
+        cpu->pc = (uint16_t)lo | ((uint16_t)hi << 8);
+        return 0;
+    }
+    case 0x58: /* CLI */
+        cpu->p &= (uint8_t)~EDU65XX_FLAG_I; return 0;
+    case 0x78: /* SEI */
+        cpu->p |= EDU65XX_FLAG_I; return 0;
     case 0xEA:
         return 0;
     default:
