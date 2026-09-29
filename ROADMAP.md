@@ -63,7 +63,7 @@
 - [x] introduce C after assembly fundamentals
 - [x] pair first C examples with conceptual assembly
 - [x] select and document primary C toolchain
-- [ ] pin reproducible LLVM-MOS build/toolchain
+- [x] pin reproducible LLVM-MOS build/toolchain
 - [ ] capture and inspect compiler-generated assembly
 - [ ] calling convention and ABI labs
 - [ ] pointers and memory-mapped I/O labs
