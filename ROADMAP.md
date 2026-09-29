@@ -52,11 +52,13 @@
 - [x] timer model and lesson
 - [x] IRQ/NMI fundamentals
 - [x] CPU interrupt entry/return path
-- [ ] serial terminal direction
+- [x] serial terminal direction
 
-**M3 status: NEXT**
+**M3 status: COMPLETE**
 
 ## M4 — C bridge
+
+**M4 status: NEXT**
 
 - introduce C after assembly fundamentals
 - pair C examples with equivalent assembly
