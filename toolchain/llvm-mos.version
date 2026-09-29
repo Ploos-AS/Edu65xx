@@ -1,0 +1,3 @@
+# Edu65xx LLVM-MOS reproducibility pin
+# Pin to an upstream commit/release identifier; do not silently float main.
+3369692
