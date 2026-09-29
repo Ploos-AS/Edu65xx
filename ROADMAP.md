@@ -65,9 +65,9 @@
 - [x] select and document primary C toolchain
 - [x] pin reproducible LLVM-MOS build/toolchain
 - [ ] capture and inspect compiler-generated assembly
-- [ ] calling convention and ABI labs
-- [ ] pointers and memory-mapped I/O labs
-- [ ] arrays and indexing labs
+- [x] calling convention and ABI labs
+- [x] pointers and memory-mapped I/O labs
+- [x] arrays and indexing labs
 - [ ] functions, locals and stack/storage labs
 - [ ] optimization comparison labs
 
