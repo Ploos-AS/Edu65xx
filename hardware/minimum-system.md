@@ -1,34 +1,22 @@
-# Edu65xx minimum system — M0
+# Edu65xx minimum system
 
-This document defines the first physical Edu65xx computer used by the course.
+This document defines the canonical physical Edu65xx memory map. The goal is not minimum chip count at any cost, but a machine whose important signals remain visible.
 
-The goal is not minimum chip count at any cost. The goal is a machine whose important signals and architectural ideas remain visible to the student.
-
-## Core parts
-
-- W65C02S CPU, DIP package preferred
-- clock source suitable for slow single-step-friendly operation
-- reset circuit with manual reset button
-- static RAM
-- EEPROM/ROM
-- simple address decoding logic
-- decoupling capacitors at every IC
-- power rail suitable for all selected components
-- headers/test points for address, data and control buses
-
-A W65C22 VIA is deliberately postponed until the basic RAM/ROM machine is understood.
-
-## First memory map
-
-The M0/M1 teaching machine uses a deliberately simple map:
+## Canonical memory map
 
 ```text
 $0000-$7FFF   RAM       32 KiB
-$8000-$DFFF   reserved  24 KiB
-$E000-$FFFF   ROM        8 KiB
+$8000-$BFFF   I/O       16 KiB window
+$C000-$FFFF   ROM       16 KiB
 ```
 
-Important locations inside this map include:
+The first peripheral occupies:
+
+```text
+$8000-$800F   W65C22 VIA
+```
+
+Important fixed CPU locations remain:
 
 ```text
 $0000-$00FF   zero page
@@ -38,84 +26,28 @@ $FFFC-$FFFD   RESET vector
 $FFFE-$FFFF   IRQ/BRK vector
 ```
 
-The large reserved area leaves room for later I/O without forcing an early redesign of the teaching machine.
+This map is the shared contract for course material, simulator, emulator, breadboard computer and future PCB.
+
+## Core parts
+
+- W65C02S CPU, DIP preferred
+- static RAM
+- EEPROM/ROM
+- address decoding logic
+- slow/manual and normal clock options
+- reset circuit
+- decoupling at every IC
+- exposed address, data and control buses
+- W65C22 VIA from M3 onward
 
 ## Why this map?
 
-The student can immediately see that:
+RAM contains zero page and stack. I/O gets a large, obvious region that is easy to decode and inspect. ROM occupies the top of memory, where the CPU vectors live. Program examples intended to represent ROM begin at `$C000`.
 
-- zero page is ordinary RAM with special CPU addressing modes
-- the stack occupies page 1
-- ROM must occupy the top of memory because the CPU fetches vectors there
-- address decoding decides which physical chip responds to an address
+## Signals to expose
 
-This connects assembly concepts directly to physical hardware.
+Expose `A0-A15`, `D0-D7`, `RWB`, `PHI2`, `RESB`, `IRQB`, `NMIB` and `SYNC`. `SYNC` is especially useful because it identifies opcode fetches on the physical machine.
 
-## Bus signals to expose
+## Learning goal
 
-At minimum, provide clearly labelled access to:
-
-### Address bus
-
-`A0-A15`
-
-### Data bus
-
-`D0-D7`
-
-### Control / timing
-
-- `RWB`
-- `PHI2`
-- `RESB`
-- `IRQB`
-- `NMIB`
-- `SYNC`
-
-`SYNC` is especially useful in the course because it identifies opcode-fetch cycles and makes instruction execution visible on a logic analyser.
-
-## Clock philosophy
-
-The course should support two clock modes:
-
-1. **very slow/manual educational clock** for observing bus activity
-2. **normal oscillator clock** for running useful programs
-
-Do not design the first lessons around maximum clock frequency.
-
-## Reset behaviour
-
-The first ROM program should do as little as possible:
-
-1. CPU reset
-2. fetch RESET vector from `$FFFC/$FFFD`
-3. begin executing code in ROM
-4. enter a known infinite loop
-
-This lets the student capture the complete startup sequence before RAM or I/O software complexity is introduced.
-
-## Breadboard principles
-
-- Prefer DIP ICs and sockets where practical.
-- Keep buses visually organized.
-- Use short, consistent wiring.
-- Put decoupling capacitors close to each IC.
-- Make important signals accessible to a multimeter, oscilloscope or logic analyser.
-- Label connections in course diagrams by signal name, not only by physical pin number.
-
-## What the student should be able to explain
-
-After building the minimum system, the student should be able to answer:
-
-- Why does the CPU need a clock?
-- What happens during reset?
-- Why must ROM appear at the top of the address space?
-- What is the difference between the address bus and data bus?
-- How does `RWB` distinguish reads and writes?
-- How does address decoding select RAM or ROM?
-- Where are zero page and the hardware stack?
-- What are the reset, IRQ and NMI vectors?
-
-## Next hardware milestone
-
-After the minimum system is stable, add memory-mapped I/O, initially with a W65C22 VIA. That belongs to a later milestone and should not obscure the fundamentals taught by this machine.
+A student should be able to follow one operation all the way from an assembly instruction to an address, an address-decoder decision, a selected device and a physical bus transaction.
