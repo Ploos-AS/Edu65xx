@@ -10,8 +10,10 @@
 - [x] Add first paired ASM/C example
 - [x] Add simulator CPU state/reset skeleton
 - [x] Define emulator machine scope
-- [ ] Add build/test tooling
-- [ ] Document breadboard minimum system
+- [x] Add build/test tooling
+- [x] Document breadboard minimum system
+
+**M0 status: COMPLETE**
 
 ## M1 — CPU fundamentals
 
