@@ -32,6 +32,7 @@ typedef struct {
     uint8_t y;
     uint8_t sp;
     uint8_t p;
+    uint8_t nmi_pending;
     uint8_t memory[EDU65XX_MEM_SIZE];
     edu65xx_via_t via;
     edu65xx_bus_cycle_t bus_trace[EDU65XX_BUS_TRACE_MAX];
@@ -39,6 +40,7 @@ typedef struct {
 } edu65xx_cpu_t;
 
 void edu65xx_cpu_reset(edu65xx_cpu_t *cpu);
+void edu65xx_cpu_request_nmi(edu65xx_cpu_t *cpu);
 int edu65xx_cpu_step(edu65xx_cpu_t *cpu);
 void edu65xx_bus_trace_clear(edu65xx_cpu_t *cpu);
 uint8_t edu65xx_read8(edu65xx_cpu_t *cpu, uint16_t address);
