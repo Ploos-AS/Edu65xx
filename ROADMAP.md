@@ -58,12 +58,18 @@
 
 ## M4 — C bridge
 
-**M4 status: NEXT**
+**M4 status: IN PROGRESS**
 
-- introduce C after assembly fundamentals
-- pair C examples with equivalent assembly
-- inspect compiler-generated assembly
-- calling conventions, stack frames, pointers and arrays
+- [x] introduce C after assembly fundamentals
+- [x] pair first C examples with conceptual assembly
+- [x] select and document primary C toolchain
+- [ ] pin reproducible LLVM-MOS build/toolchain
+- [ ] capture and inspect compiler-generated assembly
+- [ ] calling convention and ABI labs
+- [ ] pointers and memory-mapped I/O labs
+- [ ] arrays and indexing labs
+- [ ] functions, locals and stack/storage labs
+- [ ] optimization comparison labs
 
 ## M5 — Emulator
 
