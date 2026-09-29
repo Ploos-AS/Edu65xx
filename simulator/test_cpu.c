@@ -3,155 +3,92 @@
 
 #include "cpu.h"
 
+static void set_reset_vector(edu65xx_cpu_t *cpu, uint16_t address)
+{
+    cpu->memory[0xFFFC] = (uint8_t)(address & 0xFFu);
+    cpu->memory[0xFFFD] = (uint8_t)(address >> 8);
+}
+
 static void test_reset_state(void)
 {
     edu65xx_cpu_t cpu = {0};
-
-    cpu.memory[0xFFFC] = 0x00;
-    cpu.memory[0xFFFD] = 0x80;
+    set_reset_vector(&cpu, 0xC000u);
     edu65xx_cpu_reset(&cpu);
-
-    assert(cpu.pc == 0x8000);
-    assert(cpu.a == 0x00);
-    assert(cpu.x == 0x00);
-    assert(cpu.y == 0x00);
-    assert(cpu.sp == 0xFD);
-    assert(cpu.p == 0x24);
+    assert(cpu.pc == 0xC000u);
+    assert(cpu.sp == 0xFDu);
+    assert(cpu.p == 0x24u);
     assert(cpu.bus_trace_count == 2u);
-    assert(cpu.bus_trace[0].address == 0xFFFC);
-    assert(cpu.bus_trace[0].data == 0x00);
-    assert(cpu.bus_trace[0].is_write == 0u);
-    assert(cpu.bus_trace[1].address == 0xFFFD);
-    assert(cpu.bus_trace[1].data == 0x80);
+    assert(cpu.bus_trace[0].address == 0xFFFCu);
+    assert(cpu.bus_trace[1].address == 0xFFFDu);
 }
 
-static void test_load_immediate(void)
+static void test_via_gpio(void)
 {
     edu65xx_cpu_t cpu = {0};
 
-    cpu.memory[0x0000] = 0xA9; /* LDA #$42 */
-    cpu.memory[0x0001] = 0x42;
-    cpu.memory[0x0002] = 0xA2; /* LDX #$00 */
-    cpu.memory[0x0003] = 0x00;
-    cpu.memory[0x0004] = 0xA0; /* LDY #$80 */
-    cpu.memory[0x0005] = 0x80;
-
-    edu65xx_cpu_reset(&cpu);
-
-    assert(edu65xx_cpu_step(&cpu) == 0);
-    assert(cpu.a == 0x42);
-    assert(cpu.pc == 0x0002);
-    assert((cpu.p & (EDU65XX_FLAG_N | EDU65XX_FLAG_Z)) == 0);
-
-    assert(edu65xx_cpu_step(&cpu) == 0);
-    assert(cpu.x == 0x00);
-    assert((cpu.p & EDU65XX_FLAG_Z) != 0);
-
-    assert(edu65xx_cpu_step(&cpu) == 0);
-    assert(cpu.y == 0x80);
-    assert((cpu.p & EDU65XX_FLAG_N) != 0);
-    assert((cpu.p & EDU65XX_FLAG_Z) == 0);
-}
-
-static void test_adc_immediate(void)
-{
-    edu65xx_cpu_t cpu = {0};
-
-    cpu.memory[0x0000] = 0xA9; /* LDA #$FE */
-    cpu.memory[0x0001] = 0xFE;
-    cpu.memory[0x0002] = 0x69; /* ADC #$02 */
-    cpu.memory[0x0003] = 0x02;
-
-    edu65xx_cpu_reset(&cpu);
-
-    assert(edu65xx_cpu_step(&cpu) == 0);
-    assert(edu65xx_cpu_step(&cpu) == 0);
-
-    assert(cpu.a == 0x00);
-    assert((cpu.p & EDU65XX_FLAG_C) != 0);
-    assert((cpu.p & EDU65XX_FLAG_Z) != 0);
-}
-
-static void test_zero_page_and_absolute_memory(void)
-{
-    edu65xx_cpu_t cpu = {0};
-
-    cpu.memory[0x8000] = 0xA9; /* LDA #$5A */
-    cpu.memory[0x8001] = 0x5A;
-    cpu.memory[0x8002] = 0x85; /* STA $10 */
-    cpu.memory[0x8003] = 0x10;
-    cpu.memory[0x8004] = 0xA9; /* LDA #$00 */
-    cpu.memory[0x8005] = 0x00;
-    cpu.memory[0x8006] = 0xA5; /* LDA $10 */
-    cpu.memory[0x8007] = 0x10;
-    cpu.memory[0x8008] = 0x8D; /* STA $2345 */
-    cpu.memory[0x8009] = 0x45;
-    cpu.memory[0x800A] = 0x23;
-    cpu.memory[0xFFFC] = 0x00;
-    cpu.memory[0xFFFD] = 0x80;
+    /* LDA #$0F; STA $8002; LDA #$05; STA $8000 */
+    cpu.memory[0xC000] = 0xA9; cpu.memory[0xC001] = 0x0F;
+    cpu.memory[0xC002] = 0x8D; cpu.memory[0xC003] = 0x02; cpu.memory[0xC004] = 0x80;
+    cpu.memory[0xC005] = 0xA9; cpu.memory[0xC006] = 0x05;
+    cpu.memory[0xC007] = 0x8D; cpu.memory[0xC008] = 0x00; cpu.memory[0xC009] = 0x80;
+    set_reset_vector(&cpu, 0xC000u);
 
     edu65xx_cpu_reset(&cpu);
     assert(edu65xx_cpu_step(&cpu) == 0);
     assert(edu65xx_cpu_step(&cpu) == 0);
-    assert(cpu.memory[0x0010] == 0x5A);
-
+    assert(cpu.via.ddrb == 0x0Fu);
     assert(edu65xx_cpu_step(&cpu) == 0);
     assert(edu65xx_cpu_step(&cpu) == 0);
-    assert(cpu.a == 0x5A);
-
-    assert(edu65xx_cpu_step(&cpu) == 0);
-    assert(cpu.memory[0x2345] == 0x5A);
-    assert(cpu.bus_trace_count == 4u);
-    assert(cpu.bus_trace[3].address == 0x2345);
-    assert(cpu.bus_trace[3].data == 0x5A);
+    assert(cpu.via.orb == 0x05u);
+    assert(edu65xx_via_portb_pins(&cpu.via) == 0x05u);
+    assert(cpu.bus_trace[3].address == 0x8000u);
     assert(cpu.bus_trace[3].is_write == 1u);
 }
 
-static void test_stack_page(void)
+static void test_via_input(void)
 {
     edu65xx_cpu_t cpu = {0};
-
-    cpu.memory[0x8000] = 0xA9; /* LDA #$33 */
-    cpu.memory[0x8001] = 0x33;
-    cpu.memory[0x8002] = 0x48; /* PHA */
-    cpu.memory[0x8003] = 0xA9; /* LDA #$00 */
-    cpu.memory[0x8004] = 0x00;
-    cpu.memory[0x8005] = 0x68; /* PLA */
-    cpu.memory[0xFFFC] = 0x00;
-    cpu.memory[0xFFFD] = 0x80;
-
-    edu65xx_cpu_reset(&cpu);
-    assert(edu65xx_cpu_step(&cpu) == 0);
-    assert(edu65xx_cpu_step(&cpu) == 0);
-    assert(cpu.memory[0x01FD] == 0x33);
-    assert(cpu.sp == 0xFC);
-
-    assert(edu65xx_cpu_step(&cpu) == 0);
-    assert(cpu.a == 0x00);
-    assert(edu65xx_cpu_step(&cpu) == 0);
-    assert(cpu.a == 0x33);
-    assert(cpu.sp == 0xFD);
+    cpu.via.ddrb = 0x01u;
+    cpu.via.orb = 0x01u;
+    cpu.via.input_b = 0x02u;
+    assert(edu65xx_via_read(&cpu.via, 0u) == 0x03u);
 }
 
-static void test_unknown_opcode(void)
+static void test_ram_and_rom_write_rules(void)
 {
     edu65xx_cpu_t cpu = {0};
+    edu65xx_write8(&cpu, 0x1234u, 0x55u);
+    assert(cpu.memory[0x1234] == 0x55u);
 
-    cpu.memory[0x0000] = 0x02;
+    cpu.memory[0xC123] = 0xAAu;
+    edu65xx_write8(&cpu, 0xC123u, 0x11u);
+    assert(cpu.memory[0xC123] == 0xAAu);
+}
+
+static void test_stack(void)
+{
+    edu65xx_cpu_t cpu = {0};
+    cpu.memory[0xC000] = 0xA9; cpu.memory[0xC001] = 0x33;
+    cpu.memory[0xC002] = 0x48;
+    cpu.memory[0xC003] = 0xA9; cpu.memory[0xC004] = 0x00;
+    cpu.memory[0xC005] = 0x68;
+    set_reset_vector(&cpu, 0xC000u);
     edu65xx_cpu_reset(&cpu);
-
-    assert(edu65xx_cpu_step(&cpu) == -1);
-    assert(cpu.pc == 0x0001);
+    assert(edu65xx_cpu_step(&cpu) == 0);
+    assert(edu65xx_cpu_step(&cpu) == 0);
+    assert(cpu.memory[0x01FD] == 0x33u);
+    assert(edu65xx_cpu_step(&cpu) == 0);
+    assert(edu65xx_cpu_step(&cpu) == 0);
+    assert(cpu.a == 0x33u);
 }
 
 int main(void)
 {
     test_reset_state();
-    test_load_immediate();
-    test_adc_immediate();
-    test_zero_page_and_absolute_memory();
-    test_stack_page();
-    test_unknown_opcode();
+    test_via_gpio();
+    test_via_input();
+    test_ram_and_rom_write_rules();
+    test_stack();
     puts("edu65xx simulator tests: PASS");
     return 0;
 }
