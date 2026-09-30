@@ -68,8 +68,8 @@
 - [x] calling convention and ABI labs
 - [x] pointers and memory-mapped I/O labs
 - [x] arrays and indexing labs
-- [ ] functions, locals and stack/storage labs
-- [ ] optimization comparison labs
+- [x] functions, locals and stack/storage labs
+- [x] optimization comparison labs
 
 ## M5 — Emulator
 
