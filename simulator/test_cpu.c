@@ -164,6 +164,58 @@ static void test_serial_terminal(void)
 
 
 
+
+static void test_logic_status_stack_and_rmw(void)
+{
+    edu65xx_cpu_t cpu = {0};
+
+    /*
+       Exercise monitor-oriented W65C02 operations:
+       AND/ORA/EOR, BIT #, flag controls, PHX/PLX, PHY/PLY, STZ, INC/DEC.
+    */
+    cpu.memory[0xC000] = 0xA9; cpu.memory[0xC001] = 0xF0; /* LDA #$F0 */
+    cpu.memory[0xC002] = 0x29; cpu.memory[0xC003] = 0x0F; /* AND #$0F -> 0 */
+    cpu.memory[0xC004] = 0x09; cpu.memory[0xC005] = 0x55; /* ORA #$55 */
+    cpu.memory[0xC006] = 0x49; cpu.memory[0xC007] = 0x0F; /* EOR #$0F -> $5A */
+    cpu.memory[0xC008] = 0x89; cpu.memory[0xC009] = 0x0A; /* BIT #$0A */
+    cpu.memory[0xC00A] = 0x38;                         /* SEC */
+    cpu.memory[0xC00B] = 0x18;                         /* CLC */
+    cpu.memory[0xC00C] = 0xA2; cpu.memory[0xC00D] = 0x42;
+    cpu.memory[0xC00E] = 0xDA;                         /* PHX */
+    cpu.memory[0xC00F] = 0xA2; cpu.memory[0xC010] = 0x00;
+    cpu.memory[0xC011] = 0xFA;                         /* PLX */
+    cpu.memory[0xC012] = 0x9C; cpu.memory[0xC013] = 0x00; cpu.memory[0xC014] = 0x20; /* STZ $2000 */
+    cpu.memory[0xC015] = 0xEE; cpu.memory[0xC016] = 0x00; cpu.memory[0xC017] = 0x20; /* INC */
+    cpu.memory[0xC018] = 0xCE; cpu.memory[0xC019] = 0x00; cpu.memory[0xC01A] = 0x20; /* DEC */
+    set_reset_vector(&cpu, 0xC000u);
+    edu65xx_cpu_reset(&cpu);
+
+    assert(edu65xx_cpu_step(&cpu) == 0);
+    assert(edu65xx_cpu_step(&cpu) == 0);
+    assert(cpu.a == 0u && (cpu.p & EDU65XX_FLAG_Z) != 0u);
+    assert(edu65xx_cpu_step(&cpu) == 0);
+    assert(edu65xx_cpu_step(&cpu) == 0);
+    assert(cpu.a == 0x5Au);
+    assert(edu65xx_cpu_step(&cpu) == 0);
+    assert((cpu.p & EDU65XX_FLAG_Z) == 0u);
+    assert(edu65xx_cpu_step(&cpu) == 0);
+    assert((cpu.p & EDU65XX_FLAG_C) != 0u);
+    assert(edu65xx_cpu_step(&cpu) == 0);
+    assert((cpu.p & EDU65XX_FLAG_C) == 0u);
+
+    assert(edu65xx_cpu_step(&cpu) == 0);
+    assert(edu65xx_cpu_step(&cpu) == 0);
+    assert(edu65xx_cpu_step(&cpu) == 0);
+    assert(edu65xx_cpu_step(&cpu) == 0);
+    assert(cpu.x == 0x42u);
+
+    cpu.memory[0x2000] = 0xAAu;
+    assert(edu65xx_cpu_step(&cpu) == 0); assert(cpu.memory[0x2000] == 0u);
+    assert(edu65xx_cpu_step(&cpu) == 0); assert(cpu.memory[0x2000] == 1u);
+    assert(edu65xx_cpu_step(&cpu) == 0); assert(cpu.memory[0x2000] == 0u);
+    assert((cpu.p & EDU65XX_FLAG_Z) != 0u);
+}
+
 static void test_indexed_and_indirect_addressing(void)
 {
     edu65xx_cpu_t cpu = {0};
@@ -343,6 +395,7 @@ int main(void)
     test_nmi_entry_and_return();
     test_timer_irq_rti();
     test_serial_terminal();
+    test_logic_status_stack_and_rmw();
     test_indexed_and_indirect_addressing();
     test_compare_family();
     test_control_flow_and_subroutines();
