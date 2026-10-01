@@ -96,6 +96,8 @@
 - [x] logic-analyzer exercises
 - [x] first VIA GPIO bring-up ROM image + emulator qualification
 - [x] RAM smoke-test ROM image + emulator qualification
+- [x] destructive full 32 KiB RAM ROM + emulator qualification
+- [x] staged physical qualification procedure and course lesson
 - [x] VIA Timer1 IRQ ROM image + stack/vector/RTI qualification
 - [x] Edu65xx Trainer/Computer PCB concept
 - [x] complete clock and reset design
