@@ -163,6 +163,80 @@ static void test_serial_terminal(void)
 }
 
 
+
+static void test_indexed_and_indirect_addressing(void)
+{
+    edu65xx_cpu_t cpu = {0};
+
+    cpu.x = 2u;
+    cpu.y = 3u;
+
+    /* Zero-page indexed wraps at $FF -> $00. */
+    cpu.memory[0x0001] = 0x11u;
+    cpu.memory[0xC000] = 0xB5; cpu.memory[0xC001] = 0xFF; /* LDA $FF,X */
+
+    /* Absolute indexed. */
+    cpu.memory[0x2002] = 0x22u;
+    cpu.memory[0xC002] = 0xBD; cpu.memory[0xC003] = 0x00; cpu.memory[0xC004] = 0x20;
+
+    cpu.memory[0x2103] = 0x33u;
+    cpu.memory[0xC005] = 0xB9; cpu.memory[0xC006] = 0x00; cpu.memory[0xC007] = 0x21;
+
+    /* ($20,X) -> pointer at $22/$23 -> $3000. */
+    cpu.memory[0x0022] = 0x00u; cpu.memory[0x0023] = 0x30u;
+    cpu.memory[0x3000] = 0x44u;
+    cpu.memory[0xC008] = 0xA1; cpu.memory[0xC009] = 0x20;
+
+    /* ($30),Y -> $4000 + 3. */
+    cpu.memory[0x0030] = 0x00u; cpu.memory[0x0031] = 0x40u;
+    cpu.memory[0x4003] = 0x55u;
+    cpu.memory[0xC00A] = 0xB1; cpu.memory[0xC00B] = 0x30;
+
+    /* W65C02 ($40) -> $5000. */
+    cpu.memory[0x0040] = 0x00u; cpu.memory[0x0041] = 0x50u;
+    cpu.memory[0x5000] = 0x66u;
+    cpu.memory[0xC00C] = 0xB2; cpu.memory[0xC00D] = 0x40;
+
+    /* STA ($30),Y stores through the same effective-address machinery. */
+    cpu.memory[0xC00E] = 0x91; cpu.memory[0xC00F] = 0x30;
+
+    set_reset_vector(&cpu, 0xC000u);
+    edu65xx_cpu_reset(&cpu);
+    cpu.x = 2u;
+    cpu.y = 3u;
+
+    assert(edu65xx_cpu_step(&cpu) == 0); assert(cpu.a == 0x11u);
+    assert(edu65xx_cpu_step(&cpu) == 0); assert(cpu.a == 0x22u);
+    assert(edu65xx_cpu_step(&cpu) == 0); assert(cpu.a == 0x33u);
+    assert(edu65xx_cpu_step(&cpu) == 0); assert(cpu.a == 0x44u);
+    assert(edu65xx_cpu_step(&cpu) == 0); assert(cpu.a == 0x55u);
+    assert(edu65xx_cpu_step(&cpu) == 0); assert(cpu.a == 0x66u);
+    assert(edu65xx_cpu_step(&cpu) == 0);
+    assert(cpu.memory[0x4003] == 0x66u);
+}
+
+static void test_compare_family(void)
+{
+    edu65xx_cpu_t cpu = {0};
+
+    cpu.memory[0xC000] = 0xA2; cpu.memory[0xC001] = 0x10; /* LDX #$10 */
+    cpu.memory[0xC002] = 0xE0; cpu.memory[0xC003] = 0x10; /* CPX #$10 */
+    cpu.memory[0xC004] = 0xA0; cpu.memory[0xC005] = 0x20; /* LDY #$20 */
+    cpu.memory[0xC006] = 0xC0; cpu.memory[0xC007] = 0x21; /* CPY #$21 */
+    set_reset_vector(&cpu, 0xC000u);
+    edu65xx_cpu_reset(&cpu);
+
+    assert(edu65xx_cpu_step(&cpu) == 0);
+    assert(edu65xx_cpu_step(&cpu) == 0);
+    assert((cpu.p & (EDU65XX_FLAG_Z | EDU65XX_FLAG_C)) ==
+           (EDU65XX_FLAG_Z | EDU65XX_FLAG_C));
+
+    assert(edu65xx_cpu_step(&cpu) == 0);
+    assert(edu65xx_cpu_step(&cpu) == 0);
+    assert((cpu.p & EDU65XX_FLAG_C) == 0u);
+    assert((cpu.p & EDU65XX_FLAG_N) != 0u);
+}
+
 static void test_control_flow_and_subroutines(void)
 {
     edu65xx_cpu_t cpu = {0};
@@ -269,6 +343,8 @@ int main(void)
     test_nmi_entry_and_return();
     test_timer_irq_rti();
     test_serial_terminal();
+    test_indexed_and_indirect_addressing();
+    test_compare_family();
     test_control_flow_and_subroutines();
     test_jmp_and_negative_branch();
     test_stack();
