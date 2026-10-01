@@ -91,7 +91,7 @@ NMIB -> +5 V through 10 kOhm
 NMI button -> NMIB to GND
 ```
 
-Before the VIA is installed, CPU IRQB is held high through 10 kOhm. After the VIA is installed, its IRQB drives the net; retain only a pull arrangement that is electrically valid for the W65C22S totem-pole IRQ output.
+Before the VIA is installed, CPU IRQB may be held high temporarily through 10 kOhm. Remove that temporary pull-up when the W65C22S is installed. Rev A then has one IRQ driver: W65C22S IRQB directly drives CPU IRQB. The W65C22S IRQB is a totem-pole/full output driver; do not wire-OR another push-pull IRQ source onto this net.
 
 ## First LED
 
