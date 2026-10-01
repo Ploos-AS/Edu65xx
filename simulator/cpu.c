@@ -61,6 +61,13 @@ static uint16_t fetch16(edu65xx_cpu_t *cpu)
     return (uint16_t)lo | ((uint16_t)hi << 8);
 }
 
+static uint16_t read16(edu65xx_cpu_t *cpu, uint16_t address)
+{
+    uint8_t lo = edu65xx_read8(cpu, address);
+    uint8_t hi = edu65xx_read8(cpu, (uint16_t)(address + 1u));
+    return (uint16_t)lo | ((uint16_t)hi << 8);
+}
+
 static uint16_t read_zp16(edu65xx_cpu_t *cpu, uint8_t address)
 {
     uint8_t lo = edu65xx_read8(cpu, address);
@@ -411,6 +418,24 @@ int edu65xx_cpu_step(edu65xx_cpu_t *cpu)
     case 0xE1: sbc8(cpu, edu65xx_read8(cpu, addr_indx(cpu))); return 0;
     case 0xF1: sbc8(cpu, edu65xx_read8(cpu, addr_indy(cpu))); return 0;
     case 0xF2: sbc8(cpu, edu65xx_read8(cpu, addr_zp_ind(cpu))); return 0;
+    case 0x08: /* PHP */
+        push8(cpu, (uint8_t)(cpu->p | EDU65XX_FLAG_B | EDU65XX_FLAG_U)); return 0;
+    case 0x28: /* PLP */
+        cpu->p = (uint8_t)((pull8(cpu) & (uint8_t)~EDU65XX_FLAG_B) | EDU65XX_FLAG_U); return 0;
+    case 0x00: { /* BRK */
+        uint8_t lo;
+        uint8_t hi;
+        ++cpu->pc; /* skip BRK signature byte */
+        push8(cpu, (uint8_t)(cpu->pc >> 8));
+        push8(cpu, (uint8_t)cpu->pc);
+        push8(cpu, (uint8_t)(cpu->p | EDU65XX_FLAG_B | EDU65XX_FLAG_U));
+        cpu->p |= EDU65XX_FLAG_I;
+        cpu->p &= (uint8_t)~EDU65XX_FLAG_D;
+        lo = edu65xx_read8(cpu, 0xFFFEu);
+        hi = edu65xx_read8(cpu, 0xFFFFu);
+        cpu->pc = (uint16_t)lo | ((uint16_t)hi << 8);
+        return 0;
+    }
     case 0x48:
         push8(cpu, cpu->a); return 0;
     case 0x68:
@@ -430,6 +455,16 @@ int edu65xx_cpu_step(edu65xx_cpu_t *cpu)
         cpu->p |= EDU65XX_FLAG_I; return 0;
     case 0x4C: /* JMP abs */
         cpu->pc = fetch16(cpu); return 0;
+    case 0x6C: { /* JMP (abs), W65C02 increments across page boundaries */
+        uint16_t pointer = fetch16(cpu);
+        cpu->pc = read16(cpu, pointer);
+        return 0;
+    }
+    case 0x7C: { /* JMP (abs,X), W65C02 */
+        uint16_t pointer = (uint16_t)(fetch16(cpu) + cpu->x);
+        cpu->pc = read16(cpu, pointer);
+        return 0;
+    }
     case 0x20: { /* JSR abs */
         uint16_t target = fetch16(cpu);
         uint16_t return_address = (uint16_t)(cpu->pc - 1u);
