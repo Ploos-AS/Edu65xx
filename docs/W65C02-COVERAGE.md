@@ -21,6 +21,14 @@ M5 tracks instruction **families and semantics**, not just opcode count. An opco
 - STZ
 - INC / DEC including accumulator forms
 - CLC / SEC / CLD / SED / CLV / CLI / SEI
+- ADC / SBC in binary and decimal mode, including W65C02-valid N/V/Z/C qualification
+- ASL / LSR / ROL / ROR
+- all eight conditional branches plus BRA
+- PHP / PLP
+- BRK two-byte signature behavior and IRQ/BRK vector path
+- JMP absolute, indirect and W65C02 indexed-indirect
+- TSB / TRB
+- RMB0..7 / SMB0..7 and BBR0..7 / BBS0..7
 - RTI
 - NOP
 - IRQ and requested-NMI entry
@@ -28,20 +36,11 @@ M5 tracks instruction **families and semantics**, not just opcode count. An opco
 
 ## Partially implemented
 
-- ADC: immediate binary arithmetic exists, but full W65C02 flag semantics, decimal mode and all addressing modes are not yet qualified.
 - interrupt timing is functional rather than PHI2 cycle-accurate.
 - NMI is represented as a deterministic pending request, not a pin-level edge detector.
 
 ## Remaining M5 ISA families
 
-- complete ADC and SBC, including W65C02 decimal-mode flags
-- ASL / LSR / ROL / ROR
-- remaining conditional branches: BCC, BCS, BMI, BPL, BVC, BVS
-- PHP / PLP
-- BRK semantics and vector path
-- JMP indirect and W65C02 indexed-indirect JMP
-- TSB / TRB
-- W65C02 RMB / SMB and BBR / BBS families
 - WAI / STP machine-state behavior
 - documented treatment of defined W65C02 NOP encodings
 
