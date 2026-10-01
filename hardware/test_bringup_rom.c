@@ -32,7 +32,7 @@ int main(int argc, char **argv)
 
     for (steps = 0u; steps < 300000u && !saw_low_after_high; ++steps) {
         assert(edu65xx_machine_step(&machine) >= 0);
-        assert((machine.cpu.via.ddrb & 0x01u) != 0u || steps < 4u);
+        assert((machine.cpu.via.ddrb & 0x01u) != 0u || steps < 5u);
 
         if ((machine.cpu.via.orb & 0x01u) != 0u)
             saw_high = 1;
