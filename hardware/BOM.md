@@ -1,6 +1,6 @@
 # M6 breadboard BOM
 
-This is a **design BOM**, not yet an approved purchasing BOM. Exact manufacturer order codes for memory, logic, clock and reset parts remain open until the schematic and electrical checks are complete.
+This is the Rev A breadboard purchasing baseline. Manufacturer order codes are locked for the architectural ICs; ordinary passives, sockets, headers and breadboard hardware may use equivalent parts that meet the stated values and package needs.
 
 | Qty | Function | Requirement | Status |
 |---:|---|---|---|
@@ -15,16 +15,20 @@ This is a **design BOM**, not yet an approved purchasing BOM. Exact manufacturer
 | 1 | clock | ECS ECS-100AX-010, 1 MHz, 5 V through-hole oscillator | selected |
 | 1 | reset | Analog Devices/Maxim DS1813-5+, TO-92 reset supervisor with pushbutton support | selected |
 | 1 each | sockets | CPU, VIA, RAM, ROM, decode ICs | required |
-| 1 / IC | decoupling | 100 nF ceramic located at each IC | required |
-| 1+ | bulk decoupling | at power entry | size after supply design |
+| 10 | decoupling | 100 nF ceramic, one at each active IC/oscillator plus spare | selected |
+| 1 | bulk decoupling | 10 uF electrolytic at 5 V power entry | selected |
 | 1 | LED | first VIA output | required |
-| 1 | LED resistor | chosen for LED/supply/current target | calculate |
-| 1+ | switches/buttons | GPIO experiments | required |
+| 1 | LED resistor | 1 kOhm for first PB0 indicator | selected |
+| 1 | RDY pull-up | 4.7 kOhm | selected |
+| 4 | control pull-ups | 10 kOhm for BE, SOB, NMIB and pre-VIA IRQB | selected |
+| 1 | RESET button | normally-open momentary switch to GND on DS1813 reset net | selected |
+| 1 | NMI button | normally-open momentary switch to GND | selected |
+| 8 | input switches/buttons | VIA GPIO experiments | selected |
 | many | headers | buses, VIA, test points | required |
 | many | jumpers | breadboard wiring | required |
 | 1 | regulated supply | initial 5 V system | required |
 
-## Do not order from this file yet
+## Remaining before wiring
 
 The exact order list is intentionally blocked on:
 
