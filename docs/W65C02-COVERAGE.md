@@ -30,6 +30,8 @@ M5 tracks instruction **families and semantics**, not just opcode count. An opco
 - TSB / TRB
 - RMB0..7 / SMB0..7 and BBR0..7 / BBS0..7
 - RTI
+- WAI / STP functional machine-state behavior
+- documented reserved W65C02 NOP encodings with correct byte lengths
 - NOP
 - IRQ and requested-NMI entry
 - functional bus accesses through the canonical Edu65xx memory map
@@ -39,13 +41,12 @@ M5 tracks instruction **families and semantics**, not just opcode count. An opco
 - interrupt timing is functional rather than PHI2 cycle-accurate.
 - NMI is represented as a deterministic pending request, not a pin-level edge detector.
 
-## Remaining M5 ISA families
+## Independent qualification
 
-- WAI / STP machine-state behavior
-- documented treatment of defined W65C02 NOP encodings
+CI runs Klaus Dormann's pinned 65C02 extended-opcodes functional test against the execution core through an isolated flat-memory qualification bus. The upstream image is not vendored into Edu65xx. See `docs/QUALIFICATION.md`.
 
 ## Qualification rule
 
-M5 is not complete merely because the monitor ROM boots. Completion requires the intended W65C02 instruction surface to have deterministic tests for results, flags, addressing and relevant stack/vector behavior.
+M5 requires the intended W65C02 instruction surface to have deterministic tests for results, flags, addressing and relevant stack/vector behavior, plus the independent 65C02 functional-test gate.
 
-Exact cycle timing is a separate qualification dimension and must not be inferred from the current functional bus-access trace.
+M5 satisfies that functional qualification. Exact cycle timing remains a separate qualification dimension and must not be inferred from the current functional bus-access trace.
