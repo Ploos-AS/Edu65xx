@@ -140,6 +140,41 @@ static void inc_memory(edu65xx_cpu_t *cpu, uint16_t address, int delta)
     set_nz(cpu, value);
 }
 
+typedef enum {
+    EDU65XX_SHIFT_ASL,
+    EDU65XX_SHIFT_LSR,
+    EDU65XX_SHIFT_ROL,
+    EDU65XX_SHIFT_ROR
+} edu65xx_shift_op_t;
+
+static uint8_t shift8(edu65xx_cpu_t *cpu, uint8_t value, edu65xx_shift_op_t op)
+{
+    uint8_t carry_in = (cpu->p & EDU65XX_FLAG_C) != 0u ? 1u : 0u;
+    uint8_t carry_out;
+    uint8_t result;
+
+    if (op == EDU65XX_SHIFT_ASL || op == EDU65XX_SHIFT_ROL) {
+        carry_out = (uint8_t)((value >> 7) & 1u);
+        result = (uint8_t)(value << 1);
+        if (op == EDU65XX_SHIFT_ROL) result |= carry_in;
+    } else {
+        carry_out = (uint8_t)(value & 1u);
+        result = (uint8_t)(value >> 1);
+        if (op == EDU65XX_SHIFT_ROR) result |= (uint8_t)(carry_in << 7);
+    }
+
+    cpu->p &= (uint8_t)~EDU65XX_FLAG_C;
+    if (carry_out != 0u) cpu->p |= EDU65XX_FLAG_C;
+    set_nz(cpu, result);
+    return result;
+}
+
+static void shift_memory(edu65xx_cpu_t *cpu, uint16_t address, edu65xx_shift_op_t op)
+{
+    uint8_t result = shift8(cpu, edu65xx_read8(cpu, address), op);
+    edu65xx_write8(cpu, address, result);
+}
+
 static void compare8(edu65xx_cpu_t *cpu, uint8_t lhs, uint8_t rhs)
 {
     uint8_t result = (uint8_t)(lhs - rhs);
@@ -447,6 +482,30 @@ int edu65xx_cpu_step(edu65xx_cpu_t *cpu)
         cpu->y = cpu->a; set_nz(cpu, cpu->y); return 0;
     case 0x98: /* TYA */
         cpu->a = cpu->y; set_nz(cpu, cpu->a); return 0;
+    case 0x0A: cpu->a = shift8(cpu, cpu->a, EDU65XX_SHIFT_ASL); return 0; /* ASL */
+    case 0x06: shift_memory(cpu, addr_zp(cpu), EDU65XX_SHIFT_ASL); return 0;
+    case 0x16: shift_memory(cpu, addr_zpx(cpu), EDU65XX_SHIFT_ASL); return 0;
+    case 0x0E: shift_memory(cpu, addr_abs(cpu), EDU65XX_SHIFT_ASL); return 0;
+    case 0x1E: shift_memory(cpu, addr_absx(cpu), EDU65XX_SHIFT_ASL); return 0;
+
+    case 0x4A: cpu->a = shift8(cpu, cpu->a, EDU65XX_SHIFT_LSR); return 0; /* LSR */
+    case 0x46: shift_memory(cpu, addr_zp(cpu), EDU65XX_SHIFT_LSR); return 0;
+    case 0x56: shift_memory(cpu, addr_zpx(cpu), EDU65XX_SHIFT_LSR); return 0;
+    case 0x4E: shift_memory(cpu, addr_abs(cpu), EDU65XX_SHIFT_LSR); return 0;
+    case 0x5E: shift_memory(cpu, addr_absx(cpu), EDU65XX_SHIFT_LSR); return 0;
+
+    case 0x2A: cpu->a = shift8(cpu, cpu->a, EDU65XX_SHIFT_ROL); return 0; /* ROL */
+    case 0x26: shift_memory(cpu, addr_zp(cpu), EDU65XX_SHIFT_ROL); return 0;
+    case 0x36: shift_memory(cpu, addr_zpx(cpu), EDU65XX_SHIFT_ROL); return 0;
+    case 0x2E: shift_memory(cpu, addr_abs(cpu), EDU65XX_SHIFT_ROL); return 0;
+    case 0x3E: shift_memory(cpu, addr_absx(cpu), EDU65XX_SHIFT_ROL); return 0;
+
+    case 0x6A: cpu->a = shift8(cpu, cpu->a, EDU65XX_SHIFT_ROR); return 0; /* ROR */
+    case 0x66: shift_memory(cpu, addr_zp(cpu), EDU65XX_SHIFT_ROR); return 0;
+    case 0x76: shift_memory(cpu, addr_zpx(cpu), EDU65XX_SHIFT_ROR); return 0;
+    case 0x6E: shift_memory(cpu, addr_abs(cpu), EDU65XX_SHIFT_ROR); return 0;
+    case 0x7E: shift_memory(cpu, addr_absx(cpu), EDU65XX_SHIFT_ROR); return 0;
+
     case 0x18: cpu->p &= (uint8_t)~EDU65XX_FLAG_C; return 0; /* CLC */
     case 0x38: cpu->p |= EDU65XX_FLAG_C; return 0; /* SEC */
     case 0xD8: cpu->p &= (uint8_t)~EDU65XX_FLAG_D; return 0; /* CLD */
