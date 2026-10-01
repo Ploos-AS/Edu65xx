@@ -162,6 +162,87 @@ static void test_serial_terminal(void)
     assert(edu65xx_read8(&cpu, 0x8010u) == '!');
 }
 
+
+static void test_control_flow_and_subroutines(void)
+{
+    edu65xx_cpu_t cpu = {0};
+
+    /*
+       C000: LDA #$03
+       C002: JSR $C010
+       C005: CMP #$04
+       C007: BNE $C00B
+       C009: BRA $C00D
+       C00B: LDA #$EE
+       C00D: NOP
+       C010: TAX
+       C011: INX
+       C012: TXA
+       C013: RTS
+    */
+    cpu.memory[0xC000] = 0xA9; cpu.memory[0xC001] = 0x03;
+    cpu.memory[0xC002] = 0x20; cpu.memory[0xC003] = 0x10; cpu.memory[0xC004] = 0xC0;
+    cpu.memory[0xC005] = 0xC9; cpu.memory[0xC006] = 0x04;
+    cpu.memory[0xC007] = 0xD0; cpu.memory[0xC008] = 0x02;
+    cpu.memory[0xC009] = 0x80; cpu.memory[0xC00A] = 0x02;
+    cpu.memory[0xC00B] = 0xA9; cpu.memory[0xC00C] = 0xEE;
+    cpu.memory[0xC00D] = 0xEA;
+    cpu.memory[0xC010] = 0xAA;
+    cpu.memory[0xC011] = 0xE8;
+    cpu.memory[0xC012] = 0x8A;
+    cpu.memory[0xC013] = 0x60;
+    set_reset_vector(&cpu, 0xC000u);
+
+    edu65xx_cpu_reset(&cpu);
+    assert(edu65xx_cpu_step(&cpu) == 0); /* LDA */
+    assert(edu65xx_cpu_step(&cpu) == 0); /* JSR */
+    assert(cpu.pc == 0xC010u);
+    assert(cpu.sp == 0xFBu);
+    assert(cpu.memory[0x01FD] == 0xC0u);
+    assert(cpu.memory[0x01FC] == 0x04u);
+
+    assert(edu65xx_cpu_step(&cpu) == 0); /* TAX */
+    assert(edu65xx_cpu_step(&cpu) == 0); /* INX */
+    assert(edu65xx_cpu_step(&cpu) == 0); /* TXA */
+    assert(cpu.a == 0x04u);
+    assert(edu65xx_cpu_step(&cpu) == 0); /* RTS */
+    assert(cpu.pc == 0xC005u);
+    assert(cpu.sp == 0xFDu);
+
+    assert(edu65xx_cpu_step(&cpu) == 0); /* CMP */
+    assert((cpu.p & EDU65XX_FLAG_Z) != 0u);
+    assert((cpu.p & EDU65XX_FLAG_C) != 0u);
+    assert(edu65xx_cpu_step(&cpu) == 0); /* BNE not taken */
+    assert(cpu.pc == 0xC009u);
+    assert(edu65xx_cpu_step(&cpu) == 0); /* BRA */
+    assert(cpu.pc == 0xC00Du);
+    assert(edu65xx_cpu_step(&cpu) == 0); /* NOP */
+    assert(cpu.a == 0x04u);
+}
+
+static void test_jmp_and_negative_branch(void)
+{
+    edu65xx_cpu_t cpu = {0};
+
+    cpu.memory[0xC000] = 0x4C; cpu.memory[0xC001] = 0x05; cpu.memory[0xC002] = 0xC0;
+    cpu.memory[0xC005] = 0xA2; cpu.memory[0xC006] = 0x02;
+    cpu.memory[0xC007] = 0xCA;
+    cpu.memory[0xC008] = 0xD0; cpu.memory[0xC009] = 0xFD; /* back to DEX */
+    cpu.memory[0xC00A] = 0xEA;
+    set_reset_vector(&cpu, 0xC000u);
+
+    edu65xx_cpu_reset(&cpu);
+    assert(edu65xx_cpu_step(&cpu) == 0); /* JMP */
+    assert(cpu.pc == 0xC005u);
+    assert(edu65xx_cpu_step(&cpu) == 0); /* LDX #2 */
+    assert(edu65xx_cpu_step(&cpu) == 0); /* DEX => 1 */
+    assert(edu65xx_cpu_step(&cpu) == 0); /* BNE back */
+    assert(cpu.pc == 0xC007u);
+    assert(edu65xx_cpu_step(&cpu) == 0); /* DEX => 0 */
+    assert(edu65xx_cpu_step(&cpu) == 0); /* BNE not taken */
+    assert(cpu.pc == 0xC00Au);
+}
+
 static void test_stack(void)
 {
     edu65xx_cpu_t cpu = {0};
@@ -188,6 +269,8 @@ int main(void)
     test_nmi_entry_and_return();
     test_timer_irq_rti();
     test_serial_terminal();
+    test_control_flow_and_subroutines();
+    test_jmp_and_negative_branch();
     test_stack();
     puts("edu65xx simulator tests: PASS");
     return 0;
