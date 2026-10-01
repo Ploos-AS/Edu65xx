@@ -148,6 +148,67 @@ static void compare8(edu65xx_cpu_t *cpu, uint8_t lhs, uint8_t rhs)
     set_nz(cpu, result);
 }
 
+static void adc8(edu65xx_cpu_t *cpu, uint8_t value)
+{
+    uint8_t a = cpu->a;
+    uint8_t carry_in = (cpu->p & EDU65XX_FLAG_C) != 0u ? 1u : 0u;
+    uint16_t binary = (uint16_t)a + (uint16_t)value + carry_in;
+    uint8_t binary_result = (uint8_t)binary;
+    uint8_t result;
+
+    cpu->p &= (uint8_t)~(EDU65XX_FLAG_C | EDU65XX_FLAG_V);
+    if ((uint8_t)(~(a ^ value) & (a ^ binary_result) & 0x80u) != 0u)
+        cpu->p |= EDU65XX_FLAG_V;
+
+    if ((cpu->p & EDU65XX_FLAG_D) != 0u) {
+        uint16_t decimal = binary;
+        if (((a & 0x0Fu) + (value & 0x0Fu) + carry_in) > 9u)
+            decimal += 0x06u;
+        if (decimal > 0x99u) {
+            decimal += 0x60u;
+            cpu->p |= EDU65XX_FLAG_C;
+        }
+        result = (uint8_t)decimal;
+    } else {
+        if (binary > 0xFFu) cpu->p |= EDU65XX_FLAG_C;
+        result = binary_result;
+    }
+
+    cpu->a = result;
+    set_nz(cpu, result);
+}
+
+static void sbc8(edu65xx_cpu_t *cpu, uint8_t value)
+{
+    uint8_t a = cpu->a;
+    uint8_t carry_in = (cpu->p & EDU65XX_FLAG_C) != 0u ? 1u : 0u;
+    int16_t binary = (int16_t)a - (int16_t)value - (carry_in ? 0 : 1);
+    uint8_t binary_result = (uint8_t)binary;
+    uint8_t result;
+
+    cpu->p &= (uint8_t)~(EDU65XX_FLAG_C | EDU65XX_FLAG_V);
+    if ((uint8_t)((a ^ value) & (a ^ binary_result) & 0x80u) != 0u)
+        cpu->p |= EDU65XX_FLAG_V;
+    if (binary >= 0) cpu->p |= EDU65XX_FLAG_C;
+
+    if ((cpu->p & EDU65XX_FLAG_D) != 0u) {
+        int16_t low = (int16_t)(a & 0x0Fu) - (int16_t)(value & 0x0Fu) -
+                      (carry_in ? 0 : 1);
+        int16_t high = (int16_t)(a >> 4) - (int16_t)(value >> 4);
+        if (low < 0) {
+            low -= 6;
+            --high;
+        }
+        if (high < 0) high -= 6;
+        result = (uint8_t)(((uint8_t)high << 4) | ((uint8_t)low & 0x0Fu));
+    } else {
+        result = binary_result;
+    }
+
+    cpu->a = result;
+    set_nz(cpu, result);
+}
+
 static void branch_relative(edu65xx_cpu_t *cpu, int condition)
 {
     int8_t offset = (int8_t)fetch8(cpu);
@@ -296,14 +357,25 @@ int edu65xx_cpu_step(edu65xx_cpu_t *cpu)
     case 0x2C: bit8(cpu, edu65xx_read8(cpu, addr_abs(cpu)), 0); return 0;
     case 0x3C: bit8(cpu, edu65xx_read8(cpu, addr_absx(cpu)), 0); return 0;
 
-    case 0x69: {
-        uint8_t value = fetch8(cpu);
-        uint16_t sum = (uint16_t)cpu->a + (uint16_t)value;
-        if ((cpu->p & EDU65XX_FLAG_C) != 0u) ++sum;
-        cpu->p &= (uint8_t)~EDU65XX_FLAG_C;
-        if (sum > 0xFFu) cpu->p |= EDU65XX_FLAG_C;
-        cpu->a = (uint8_t)sum; set_nz(cpu, cpu->a); return 0;
-    }
+    case 0x69: adc8(cpu, fetch8(cpu)); return 0; /* ADC */
+    case 0x65: adc8(cpu, edu65xx_read8(cpu, addr_zp(cpu))); return 0;
+    case 0x75: adc8(cpu, edu65xx_read8(cpu, addr_zpx(cpu))); return 0;
+    case 0x6D: adc8(cpu, edu65xx_read8(cpu, addr_abs(cpu))); return 0;
+    case 0x7D: adc8(cpu, edu65xx_read8(cpu, addr_absx(cpu))); return 0;
+    case 0x79: adc8(cpu, edu65xx_read8(cpu, addr_absy(cpu))); return 0;
+    case 0x61: adc8(cpu, edu65xx_read8(cpu, addr_indx(cpu))); return 0;
+    case 0x71: adc8(cpu, edu65xx_read8(cpu, addr_indy(cpu))); return 0;
+    case 0x72: adc8(cpu, edu65xx_read8(cpu, addr_zp_ind(cpu))); return 0;
+
+    case 0xE9: sbc8(cpu, fetch8(cpu)); return 0; /* SBC */
+    case 0xE5: sbc8(cpu, edu65xx_read8(cpu, addr_zp(cpu))); return 0;
+    case 0xF5: sbc8(cpu, edu65xx_read8(cpu, addr_zpx(cpu))); return 0;
+    case 0xED: sbc8(cpu, edu65xx_read8(cpu, addr_abs(cpu))); return 0;
+    case 0xFD: sbc8(cpu, edu65xx_read8(cpu, addr_absx(cpu))); return 0;
+    case 0xF9: sbc8(cpu, edu65xx_read8(cpu, addr_absy(cpu))); return 0;
+    case 0xE1: sbc8(cpu, edu65xx_read8(cpu, addr_indx(cpu))); return 0;
+    case 0xF1: sbc8(cpu, edu65xx_read8(cpu, addr_indy(cpu))); return 0;
+    case 0xF2: sbc8(cpu, edu65xx_read8(cpu, addr_zp_ind(cpu))); return 0;
     case 0x48:
         push8(cpu, cpu->a); return 0;
     case 0x68:
