@@ -118,7 +118,7 @@
 **M7 status: IN PROGRESS**
 
 - [ ] larger multi-module assembly program
-- [ ] expanded serial monitor ROM
+- [x] expanded serial monitor ROM
 - [x] deterministic host debugger core
 - [x] PC breakpoints
 - [x] read/write bus watchpoints
