@@ -67,27 +67,28 @@ int main(int argc, char **argv)
     }
 
     program_size = (size_t)(argc - 1);
-    if (program_size > 0xFFFCu) {
-        fputs("program is too large\n", stderr);
+    if (program_size > (0xFFFAu - EDU65XX_ROM_BASE)) {
+        fputs("program is too large for ROM before the vectors\n", stderr);
         return 2;
     }
 
     for (i = 0; i < program_size; ++i) {
-        if (parse_byte(argv[i + 1], &cpu.memory[i]) != 0) {
+        if (parse_byte(argv[i + 1], &cpu.memory[EDU65XX_ROM_BASE + i]) != 0) {
             fprintf(stderr, "invalid hex byte: %s\n", argv[i + 1]);
             return 2;
         }
     }
 
-    cpu.memory[0xFFFC] = 0x00;
-    cpu.memory[0xFFFD] = 0x00;
+    cpu.memory[0xFFFC] = (uint8_t)(EDU65XX_ROM_BASE & 0xFFu);
+    cpu.memory[0xFFFD] = (uint8_t)(EDU65XX_ROM_BASE >> 8);
     edu65xx_cpu_reset(&cpu);
 
     puts("reset:");
     print_state(&cpu);
     print_bus_trace(&cpu);
 
-    while ((size_t)cpu.pc < program_size) {
+    while (cpu.pc >= EDU65XX_ROM_BASE &&
+           (size_t)(cpu.pc - EDU65XX_ROM_BASE) < program_size) {
         uint16_t instruction_pc = cpu.pc;
         uint8_t opcode = cpu.memory[instruction_pc];
 
