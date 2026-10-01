@@ -94,7 +94,9 @@
 - [x] canonical discrete address-decode design
 - [x] debug/test points and analyzer header
 - [x] logic-analyzer exercises
-- [x] first VIA GPIO bring-up ROM source
+- [x] first VIA GPIO bring-up ROM image + emulator qualification
+- [x] RAM smoke-test ROM image + emulator qualification
+- [x] VIA Timer1 IRQ ROM image + stack/vector/RTI qualification
 - [x] Edu65xx Trainer/Computer PCB concept
 - [x] complete clock and reset design
 - [x] complete Rev A purchasing baseline
