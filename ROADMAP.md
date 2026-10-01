@@ -73,13 +73,17 @@
 
 ## M5 — Emulator
 
-**M5 status: NEXT**
+**M5 status: IN PROGRESS**
 
-- complete W65C02 execution core
-- memory map
-- ROM/RAM devices
-- VIA/serial device models
-- deterministic tests
+- [ ] complete W65C02 execution core
+- [x] enforce canonical memory map
+- [x] ROM/RAM device behavior
+- [x] VIA/serial device routing
+- [x] deterministic machine-step API
+- [x] ROM boot/reset-vector tests
+- [x] deterministic device-tick tests
+- [ ] execute a monitor ROM end to end
+- [ ] complete M5 qualification suite
 
 ## M6 — Physical computer
 
