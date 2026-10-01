@@ -6,7 +6,7 @@ Edu65xx uses **LLVM-MOS** as the primary C toolchain for the C bridge.
 
 LLVM-MOS gives the course a modern Clang-based compiler while still exposing the constraints that make 65xx interesting:
 
-- explicit 65C02 CPU targeting,
+- explicit WDC 65C02 CPU targeting,
 - C99-oriented freestanding programming,
 - assembly output that can be inspected,
 - a documented MOS ABI/calling convention,
@@ -16,7 +16,7 @@ The course does not treat compiler output as magic or as a fixed translation tab
 
 ## Target
 
-Course compiler experiments should explicitly target the 65C02 family. Pinning an exact tested toolchain version/container is a later reproducibility task.
+Course compiler experiments should explicitly target the 65C02 family. Edu65xx pins a stable SDK release for reproducible labs and explicitly selects the WDC W65C02 CPU target.
 
 ## Three views
 
