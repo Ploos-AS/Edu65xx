@@ -5,6 +5,7 @@ SIM := build/edu65xx
 SIM_TEST := build/test_cpu
 EMU_TEST := build/test_machine
 DEBUG_TEST := build/test_debugger
+DEBUG_CLI := build/edu65xx-debug
 QUAL_TEST := build/klaus65c02
 HW_DECODE_TEST := build/test_hw_decode
 BRINGUP_GEN := build/make_bringup_rom
@@ -25,7 +26,7 @@ SIM_SRC := simulator/cpu.c simulator/via.c simulator/serial.c
 
 .PHONY: all test qualification hardware-test rev-a-package clean
 
-all: $(SIM) test
+all: $(SIM) $(DEBUG_CLI) test
 
 build:
 	mkdir -p build
@@ -41,6 +42,9 @@ $(EMU_TEST): $(SIM_SRC) emulator/machine.c emulator/machine.h emulator/monitor_r
 
 $(DEBUG_TEST): $(SIM_SRC) emulator/machine.c emulator/machine.h emulator/debugger.c emulator/debugger.h emulator/test_debugger.c | build
 	$(CC) $(CFLAGS) -Isimulator -Iemulator $(SIM_SRC) emulator/machine.c emulator/debugger.c emulator/test_debugger.c -o $(DEBUG_TEST)
+
+$(DEBUG_CLI): $(SIM_SRC) emulator/machine.c emulator/machine.h emulator/debugger.c emulator/debugger.h emulator/debugger_cli.c | build
+	$(CC) $(CFLAGS) -Isimulator -Iemulator $(SIM_SRC) emulator/machine.c emulator/debugger.c emulator/debugger_cli.c -o $(DEBUG_CLI)
 
 $(QUAL_TEST): $(SIM_SRC) simulator/cpu.h qualification/klaus65c02.c | build
 	$(CC) $(CFLAGS) -Isimulator $(SIM_SRC) qualification/klaus65c02.c -o $(QUAL_TEST)
