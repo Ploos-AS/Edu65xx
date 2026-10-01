@@ -58,13 +58,13 @@
 
 ## M4 — C bridge
 
-**M4 status: IN PROGRESS**
+**M4 status: COMPLETE**
 
 - [x] introduce C after assembly fundamentals
 - [x] pair first C examples with conceptual assembly
 - [x] select and document primary C toolchain
 - [x] pin reproducible LLVM-MOS build/toolchain
-- [ ] capture and inspect compiler-generated assembly
+- [x] capture and inspect compiler-generated assembly
 - [x] calling convention and ABI labs
 - [x] pointers and memory-mapped I/O labs
 - [x] arrays and indexing labs
@@ -72,6 +72,8 @@
 - [x] optimization comparison labs
 
 ## M5 — Emulator
+
+**M5 status: NEXT**
 
 - complete W65C02 execution core
 - memory map
