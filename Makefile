@@ -18,10 +18,11 @@ RAM_TEST := build/test_ram_smoke_rom
 RAM_FULL_GEN := build/make_ram_full_rom
 RAM_FULL_ROM := build/ram-full.bin
 RAM_FULL_TEST := build/test_ram_full_rom
+REV_A_DIR := build/rev-a
 KLAUS_BIN ?= build/65C02_extended_opcodes_test.bin
 SIM_SRC := simulator/cpu.c simulator/via.c simulator/serial.c
 
-.PHONY: all test qualification hardware-test clean
+.PHONY: all test qualification hardware-test rev-a-package clean
 
 all: $(SIM) test
 
@@ -56,10 +57,53 @@ $(BRINGUP_ROM): $(BRINGUP_GEN)
 $(BRINGUP_TEST): $(SIM_SRC) emulator/machine.c emulator/machine.h hardware/test_bringup_rom.c | build
 	$(CC) $(CFLAGS) -Isimulator -Iemulator $(SIM_SRC) emulator/machine.c hardware/test_bringup_rom.c -o $(BRINGUP_TEST)
 
-hardware-test: $(HW_DECODE_TEST) $(BRINGUP_ROM) $(BRINGUP_TEST)
+$(IRQ_GEN): rom/bringup/make_irq_image.c | build
+	$(CC) $(CFLAGS) rom/bringup/make_irq_image.c -o $(IRQ_GEN)
+
+$(IRQ_ROM): $(IRQ_GEN)
+	./$(IRQ_GEN) $(IRQ_ROM)
+
+$(IRQ_TEST): $(SIM_SRC) emulator/machine.c emulator/machine.h hardware/test_irq_rom.c | build
+	$(CC) $(CFLAGS) -Isimulator -Iemulator $(SIM_SRC) emulator/machine.c hardware/test_irq_rom.c -o $(IRQ_TEST)
+
+$(RAM_GEN): rom/bringup/make_ram_smoke_image.c | build
+	$(CC) $(CFLAGS) rom/bringup/make_ram_smoke_image.c -o $(RAM_GEN)
+
+$(RAM_ROM): $(RAM_GEN)
+	./$(RAM_GEN) $(RAM_ROM)
+
+$(RAM_TEST): $(SIM_SRC) emulator/machine.c emulator/machine.h hardware/test_ram_smoke_rom.c | build
+	$(CC) $(CFLAGS) -Isimulator -Iemulator $(SIM_SRC) emulator/machine.c hardware/test_ram_smoke_rom.c -o $(RAM_TEST)
+
+$(RAM_FULL_GEN): rom/bringup/make_ram_full_image.c | build
+	$(CC) $(CFLAGS) rom/bringup/make_ram_full_image.c -o $(RAM_FULL_GEN)
+
+$(RAM_FULL_ROM): $(RAM_FULL_GEN)
+	./$(RAM_FULL_GEN) $(RAM_FULL_ROM)
+
+$(RAM_FULL_TEST): $(SIM_SRC) emulator/machine.c emulator/machine.h hardware/test_ram_full_rom.c | build
+	$(CC) $(CFLAGS) -Isimulator -Iemulator $(SIM_SRC) emulator/machine.c hardware/test_ram_full_rom.c -o $(RAM_FULL_TEST)
+
+hardware-test: $(HW_DECODE_TEST) $(BRINGUP_ROM) $(BRINGUP_TEST) $(IRQ_ROM) $(IRQ_TEST) $(RAM_ROM) $(RAM_TEST) $(RAM_FULL_ROM) $(RAM_FULL_TEST)
+	python3 hardware/check_connectivity.py
 	./$(HW_DECODE_TEST)
 	./$(BRINGUP_TEST) $(BRINGUP_ROM)
-	test "$(wc -c < $(BRINGUP_ROM))" -eq 16384
+	./$(RAM_TEST) $(RAM_ROM)
+	./$(RAM_FULL_TEST) $(RAM_FULL_ROM)
+	./$(IRQ_TEST) $(IRQ_ROM)
+	test "$$(wc -c < $(BRINGUP_ROM))" -eq 16384
+	test "$$(wc -c < $(RAM_ROM))" -eq 16384
+	test "$$(wc -c < $(RAM_FULL_ROM))" -eq 16384
+	test "$$(wc -c < $(IRQ_ROM))" -eq 16384
+
+rev-a-package: hardware-test
+	rm -rf $(REV_A_DIR)
+	mkdir -p $(REV_A_DIR)
+	cp $(BRINGUP_ROM) $(RAM_ROM) $(RAM_FULL_ROM) $(IRQ_ROM) $(REV_A_DIR)/
+	cp hardware/BOM.md hardware/assembly-checklist.md hardware/bringup-sequence.md hardware/evidence-template.md $(REV_A_DIR)/
+	cd $(REV_A_DIR) && sha256sum *.bin > SHA256SUMS
+	printf '%s\n' 'Edu65xx Rev A physical build package' > $(REV_A_DIR)/README.txt
+	printf '%s\n' 'ROM order: via-blink -> ram-smoke -> ram-full -> via-irq' >> $(REV_A_DIR)/README.txt
 
 test: $(SIM_TEST) $(EMU_TEST)
 	./$(SIM_TEST)
