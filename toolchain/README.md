@@ -2,14 +2,14 @@
 
 The primary M4 compiler is LLVM-MOS.
 
-The upstream SDK documents downloadable prebuilt archives, while the compiler documents `--target=mos` and `-mcpu=mos65c02`. Edu65xx records an upstream identifier in `llvm-mos.version` so course results never intentionally float with upstream `main`.
+The upstream SDK documents downloadable prebuilt archives, while the compiler documents `--target=mos` and `-mcpu=mosw65c02`. Edu65xx records an upstream identifier in `llvm-mos.version` so course results never intentionally float with upstream `main`.
 
 ## Compile an example to assembly
 
 With LLVM-MOS installed:
 
 ```sh
-LLVM_MOS_CLANG=mos-clang ./scripts/compile-c-to-asm.sh \
+LLVM_MOS_CLANG=clang ./scripts/compile-c-to-asm.sh \
   examples/c/02-memory-mapped-io.c build/02-memory-mapped-io.s
 ```
 
@@ -17,7 +17,7 @@ The script uses:
 
 ```text
 --target=mos
--mcpu=mos65c02
+-mcpu=mosw65c02
 -std=c99
 -ffreestanding
 -S
