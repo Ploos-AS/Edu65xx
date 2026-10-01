@@ -232,12 +232,14 @@ pin 14 -> +5 V
 
 Local 100 nF between +5 V and GND.
 
-## LED1 — first GPIO evidence
+## LED1 / LED2 — bring-up evidence
 
 ```text
-U2 pin 10 PB0 -> 1 kOhm -> LED anode
-LED cathode -> GND
+U2 pin 10 PB0 -> 1 kOhm -> LED1 anode -> LED1 cathode -> GND
+U2 pin 11 PB1 -> 1 kOhm -> LED2 anode -> LED2 cathode -> GND
 ```
+
+The simple GPIO ROM uses PB0. The RAM smoke ROM uses PB0=PASS and PB1=FAIL.
 
 ## Address-decode proof
 
