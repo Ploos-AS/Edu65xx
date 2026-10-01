@@ -297,10 +297,10 @@ static void test_brk_php_plp_and_indirect_jumps(void)
 
     assert(edu65xx_cpu_step(&cpu) == 0); /* BRK */
     assert(cpu.pc == 0xC100u);
-    assert(cpu.memory[0x01FC] == 0xC0u);
-    assert(cpu.memory[0x01FB] == 0x05u); /* BRK return address C005 */
-    assert((cpu.memory[0x01FA] & EDU65XX_FLAG_B) != 0u);
-    assert((cpu.memory[0x01FA] & EDU65XX_FLAG_D) != 0u);
+    assert(cpu.memory[0x01FD] == 0xC0u);
+    assert(cpu.memory[0x01FC] == 0x05u); /* BRK return address C005 */
+    assert((cpu.memory[0x01FB] & EDU65XX_FLAG_B) != 0u);
+    assert((cpu.memory[0x01FB] & EDU65XX_FLAG_D) != 0u);
     assert((cpu.p & EDU65XX_FLAG_D) == 0u);
     assert(edu65xx_cpu_step(&cpu) == 0); /* RTI */
     assert(cpu.pc == 0xC005u);
