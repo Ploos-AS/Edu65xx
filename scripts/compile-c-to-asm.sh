@@ -1,8 +1,8 @@
 #!/bin/sh
 set -eu
 
-CC="${LLVM_MOS_CLANG:-mos-clang}"
-TARGET="${LLVM_MOS_TARGET:-mos65c02}"
+CC="${LLVM_MOS_CLANG:-clang}"
+TARGET="${LLVM_MOS_TARGET:-mosw65c02}"
 
 if [ "$#" -ne 2 ]; then
     echo "usage: $0 INPUT.c OUTPUT.s" >&2
