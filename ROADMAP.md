@@ -105,6 +105,7 @@
 - [x] complete net-level breadboard wiring contract
 - [x] complete pin-numbered Rev A schematic contract from manufacturer datasheets
 - [x] draw graphical Rev A review schematic and perform datasheet/connectivity review
+- [x] publish staged assembly checklist and analyzer channel plans
 - [ ] build breadboard system
 - [ ] capture physical RESET/ROM/RAM/VIA/IRQ evidence
 - [ ] qualify physical breadboard system
