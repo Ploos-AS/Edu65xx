@@ -73,7 +73,7 @@
 
 ## M5 — Emulator
 
-**M5 status: IN PROGRESS**
+**M5 status: COMPLETE**
 
 - [x] complete W65C02 functional execution core
 - [x] enforce canonical memory map
@@ -83,7 +83,7 @@
 - [x] ROM boot/reset-vector tests
 - [x] deterministic device-tick tests
 - [x] execute a monitor ROM end to end
-- [ ] complete M5 qualification suite
+- [x] complete M5 qualification suite
 
 ## M6 — Physical computer
 
