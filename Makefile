@@ -8,6 +8,7 @@ DEBUG_TEST := build/test_debugger
 DEBUG_CLI := build/edu65xx-debug
 M7_LINK_TEST := build/test_m7_linker_rom
 M7_MONITOR_TEST := build/test_m7_monitor
+M7_MIXED_TEST := build/test_m7_mixed_rom
 QUAL_TEST := build/klaus65c02
 HW_DECODE_TEST := build/test_hw_decode
 BRINGUP_GEN := build/make_bringup_rom
@@ -53,6 +54,9 @@ $(M7_LINK_TEST): $(SIM_SRC) emulator/machine.c emulator/machine.h emulator/test_
 
 $(M7_MONITOR_TEST): $(SIM_SRC) emulator/machine.c emulator/machine.h emulator/test_m7_monitor.c | build
 	$(CC) $(CFLAGS) -Isimulator -Iemulator $(SIM_SRC) emulator/machine.c emulator/test_m7_monitor.c -o $(M7_MONITOR_TEST)
+
+$(M7_MIXED_TEST): $(SIM_SRC) emulator/machine.c emulator/machine.h emulator/test_m7_mixed_rom.c | build
+	$(CC) $(CFLAGS) -Isimulator -Iemulator $(SIM_SRC) emulator/machine.c emulator/test_m7_mixed_rom.c -o $(M7_MIXED_TEST)
 
 $(QUAL_TEST): $(SIM_SRC) simulator/cpu.h qualification/klaus65c02.c | build
 	$(CC) $(CFLAGS) -Isimulator $(SIM_SRC) qualification/klaus65c02.c -o $(QUAL_TEST)
