@@ -97,7 +97,9 @@
 - [x] first VIA GPIO bring-up ROM source
 - [x] Edu65xx Trainer/Computer PCB concept
 - [x] complete clock and reset design
-- [ ] complete purchasing BOM and wiring/schematic
+- [x] complete Rev A purchasing baseline
+- [x] complete net-level breadboard wiring contract
+- [ ] draw/review pin-numbered schematic from manufacturer datasheets
 - [ ] build breadboard system
 - [ ] capture physical RESET/ROM/RAM/VIA/IRQ evidence
 - [ ] qualify physical breadboard system
