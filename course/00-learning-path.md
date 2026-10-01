@@ -52,3 +52,56 @@ bus transactions
 ↓
 physical memory and I/O
 ```
+
+
+## Phase G — Build larger programs
+
+M7 stops treating each concept as an isolated example.
+
+Students combine the earlier layers through:
+
+- deterministic debugging and bus watchpoints
+- object files, symbols, relocations and linker maps
+- a linked ROM monitor
+- mixed C/assembly calls
+- a four-module assembly application
+- host-side emulator extensions around real device boundaries
+
+The advanced sequence is:
+
+```text
+13  Debugging the machine
+14  Linker and symbols
+15  ROM monitor
+16  Mixed C and assembly
+17  Multi-module assembly
+18  Emulator extension
+```
+
+The recurring question becomes:
+
+> Which component owns this behavior, and what contract connects it to the next component?
+
+## Phase H — Optional W65C816 continuation
+
+Only after the W65C02 path is complete, Chapter 19 introduces the architectural bridge to W65C816.
+
+The continuation begins from reset in Emulation mode and grows the model deliberately toward:
+
+```text
+native mode
+ -> 16-bit register widths
+ -> bank registers
+ -> 24-bit addresses
+ -> cross-bank control flow
+ -> Direct Register and native stack
+ -> block moves
+```
+
+This is an optional continuation. It does not replace the W65C02 course or alter the W65C02 Rev A hardware baseline.
+
+The design contract is documented in:
+
+```text
+docs/W65C816-CONTINUATION.md
+```
