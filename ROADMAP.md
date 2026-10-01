@@ -104,7 +104,7 @@
 - [x] complete Rev A purchasing baseline
 - [x] complete net-level breadboard wiring contract
 - [x] complete pin-numbered Rev A schematic contract from manufacturer datasheets
-- [ ] draw graphical schematic and perform independent connectivity review
+- [x] draw graphical Rev A review schematic and perform datasheet/connectivity review
 - [ ] build breadboard system
 - [ ] capture physical RESET/ROM/RAM/VIA/IRQ evidence
 - [ ] qualify physical breadboard system
