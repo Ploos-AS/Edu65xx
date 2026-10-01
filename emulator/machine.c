@@ -39,8 +39,10 @@ int edu65xx_machine_step(edu65xx_machine_t *machine)
     machine->last_event = (edu65xx_machine_event_t)result;
     ++machine->steps;
 
-    /* Functional device time: one VIA tick per successful machine step.
-       This is deterministic, not a claim of exact PHI2 timing. */
-    edu65xx_via_tick(&machine->cpu.via);
+    /* Functional device time: one VIA tick per active/waiting machine step.
+       STP halts this functional clock until reset. This is deterministic,
+       not a claim of exact PHI2 timing. */
+    if (machine->cpu.stopped == 0u)
+        edu65xx_via_tick(&machine->cpu.via);
     return 0;
 }
