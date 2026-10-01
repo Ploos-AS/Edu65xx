@@ -1,0 +1,103 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="950" viewBox="0 0 1400 950">
+<style>
+text{font-family:monospace;font-size:16px;fill:#111}.title{font-size:28px;font-weight:bold}.sub{font-size:14px}
+.box{fill:#fff;stroke:#111;stroke-width:2}.bus{fill:none;stroke:#111;stroke-width:4}.wire{fill:none;stroke:#111;stroke-width:2}
+.note{fill:#fff;stroke:#555;stroke-width:1;stroke-dasharray:6 4}.label{font-weight:bold}
+</style>
+<text x="40" y="45" class="title">Edu65xx Rev A — graphical breadboard schematic review</text>
+<text x="40" y="72" class="sub">Pin-level authority: hardware/rev-a-connectivity.tsv + schematic-rev-a.md</text>
+
+<!-- CPU -->
+<rect x="540" y="190" width="300" height="390" class="box"/>
+<text x="620" y="220" class="label">U1 W65C02S</text>
+<text x="560" y="255">9..25  A0..A15</text>
+<text x="560" y="285">33..26 D0..D7</text>
+<text x="560" y="315">34 RWB</text>
+<text x="560" y="345">37 PHI2</text>
+<text x="560" y="375">40 RESB</text>
+<text x="560" y="405">4 IRQB</text>
+<text x="560" y="435">7 SYNC → analyzer</text>
+<text x="560" y="465">2 RDY → 4.7k → +5V</text>
+<text x="560" y="495">6 NMIB → 10k → +5V</text>
+<text x="560" y="525">36 BE, 38 SOB → 10k → +5V</text>
+<text x="560" y="555">8 +5V   21 GND</text>
+
+<!-- RAM -->
+<rect x="80" y="170" width="300" height="200" class="box"/>
+<text x="135" y="200" class="label">U3 AS6C62256 SRAM</text>
+<text x="100" y="235">A0..A14 ← CPU</text>
+<text x="100" y="265">D0..D7 ↔ CPU</text>
+<text x="100" y="295">20 /CE ← A15</text>
+<text x="100" y="325">22 /OE ← /RD</text>
+<text x="100" y="350">27 /WE ← RWB</text>
+
+<!-- ROM -->
+<rect x="80" y="430" width="300" height="220" class="box"/>
+<text x="125" y="460" class="label">U4 AT28C256 EEPROM</text>
+<text x="100" y="495">A0..A13 ← CPU</text>
+<text x="100" y="525">1 A14 → GND (lower bank)</text>
+<text x="100" y="555">D0..D7 ↔ CPU</text>
+<text x="100" y="585">20 /CE ← /ROM_CS</text>
+<text x="100" y="615">22 /OE ← /RD   27 /WE → +5V</text>
+
+<!-- VIA -->
+<rect x="1000" y="190" width="320" height="330" class="box"/>
+<text x="1080" y="220" class="label">U2 W65C22S VIA</text>
+<text x="1020" y="255">38..35 RS0..RS3 ← A0..A3</text>
+<text x="1020" y="285">33..26 D0..D7 ↔ CPU</text>
+<text x="1020" y="315">22 RWB ← CPU</text>
+<text x="1020" y="345">25 PHI2 ← Y1</text>
+<text x="1020" y="375">34 RESB ← U8</text>
+<text x="1020" y="405">23 CS2B ← /VIA_CS</text>
+<text x="1020" y="435">24 CS1 → +5V</text>
+<text x="1020" y="465">21 IRQB → CPU pin 4</text>
+<text x="1020" y="495">10 PB0 PASS/activity; 11 PB1 FAIL</text>
+
+<!-- buses -->
+<path d="M380 245 H540 M840 245 H1000" class="bus"/>
+<text x="430" y="235">A0..A15</text>
+<text x="865" y="235">A0..A3</text>
+<path d="M380 280 H540 M840 280 H1000" class="bus"/>
+<text x="430" y="305">D0..D7</text>
+<text x="875" y="305">D0..D7</text>
+<path d="M380 540 H500 V280 H540" class="bus"/>
+
+<!-- decode -->
+<rect x="440" y="690" width="500" height="200" class="box"/>
+<text x="590" y="720" class="label">address/control decode</text>
+<text x="460" y="755">U5 74HC138: A15:A14:A13=100 → REGION_100_B</text>
+<text x="460" y="785">U9 74HC688: A11..A4=0 → A11_A4_EQ_B</text>
+<text x="460" y="815">U7 74HC32: Y4 OR A12 OR EQB → /VIA_CS</text>
+<text x="460" y="845">U6 74HC00: NAND(A15,A14) → /ROM_CS</text>
+<text x="460" y="875">U6 74HC00: NOT(RWB) → /RD</text>
+<path d="M690 580 V690" class="wire"/>
+<text x="700" y="650">A12..A15, RWB</text>
+<path d="M440 825 H400 V585 H380" class="wire"/>
+<path d="M940 810 H970 V405 H1000" class="wire"/>
+
+<!-- clock/reset -->
+<rect x="980" y="610" width="340" height="260" class="box"/>
+<text x="1050" y="640" class="label">clock + reset</text>
+<text x="1000" y="680">Y1 ECS-100AX-010</text>
+<text x="1000" y="710">8 OUT 1 MHz → PHI2</text>
+<text x="1000" y="750">U8 DS1813-5+</text>
+<text x="1000" y="780">1 RSTB → RESB</text>
+<text x="1000" y="810">2 +5V   3 GND</text>
+<text x="1000" y="845">RESET pushbutton: RESB → GND</text>
+<path d="M980 710 H900 V345 H840" class="wire"/>
+<path d="M980 780 H920 V375 H840" class="wire"/>
+
+<!-- IRQ -->
+<path d="M1000 465 H900 V405 H840" class="wire"/>
+<text x="875" y="455">IRQB</text>
+
+<!-- notes -->
+<rect x="40" y="720" width="350" height="170" class="note"/>
+<text x="60" y="750" class="label">Rev A invariants</text>
+<text x="60" y="780">RAM: $0000-$7FFF</text>
+<text x="60" y="810">VIA: $8000-$800F only</text>
+<text x="60" y="840">ROM: $C000-$FFFF</text>
+<text x="60" y="870">unused I/O: no device selected</text>
+
+<text x="40" y="930" class="sub">Review drawing — do not infer omitted physical pins from line placement; use rev-a-connectivity.tsv for wiring.</text>
+</svg>
