@@ -63,6 +63,37 @@ static void test_ram_and_rom_write_rules(void)
     cpu.memory[0xC123] = 0xAAu;
     edu65xx_write8(&cpu, 0xC123u, 0x11u);
     assert(cpu.memory[0xC123] == 0xAAu);
+
+    /* $8012-$BFFF is reserved/unmapped I/O, not hidden RAM. */
+    cpu.memory[0x9000] = 0x12u;
+    edu65xx_write8(&cpu, 0x9000u, 0x34u);
+    assert(cpu.memory[0x9000] == 0x12u);
+    assert(edu65xx_read8(&cpu, 0x9000u) == 0xFFu);
+}
+
+static void test_nmi_entry_and_return(void)
+{
+    edu65xx_cpu_t cpu = {0};
+
+    cpu.memory[0xC000] = 0xEA; /* interrupted instruction */
+    cpu.memory[0xC100] = 0x40; /* RTI */
+    set_reset_vector(&cpu, 0xC000u);
+    cpu.memory[0xFFFA] = 0x00u;
+    cpu.memory[0xFFFB] = 0xC1u;
+
+    edu65xx_cpu_reset(&cpu);
+    edu65xx_cpu_request_nmi(&cpu);
+    assert(edu65xx_cpu_step(&cpu) == 2);
+    assert(cpu.pc == 0xC100u);
+    assert(cpu.sp == 0xFAu);
+    assert(cpu.memory[0x01FD] == 0xC0u);
+    assert(cpu.memory[0x01FC] == 0x00u);
+    assert((cpu.memory[0x01FB] & EDU65XX_FLAG_B) == 0u);
+    assert(cpu.nmi_pending == 0u);
+
+    assert(edu65xx_cpu_step(&cpu) == 0);
+    assert(cpu.pc == 0xC000u);
+    assert(cpu.sp == 0xFDu);
 }
 
 static void test_timer_irq_rti(void)
@@ -154,6 +185,7 @@ int main(void)
     test_via_gpio();
     test_via_input();
     test_ram_and_rom_write_rules();
+    test_nmi_entry_and_return();
     test_timer_irq_rti();
     test_serial_terminal();
     test_stack();
