@@ -96,7 +96,7 @@
 - [x] logic-analyzer exercises
 - [x] first VIA GPIO bring-up ROM source
 - [x] Edu65xx Trainer/Computer PCB concept
-- [ ] complete clock and reset schematic
+- [x] complete clock and reset design
 - [ ] complete purchasing BOM and wiring/schematic
 - [ ] build breadboard system
 - [ ] capture physical RESET/ROM/RAM/VIA/IRQ evidence
