@@ -59,14 +59,16 @@ jobs:
 
       - name: Generate M4 assembly
         run: |
-          chmod +x scripts/compile-c-to-asm.sh scripts/build-c-labs.sh scripts/build-optimization-lab.sh scripts/build-linker-lab.sh scripts/build-m7-monitor.sh
+          chmod +x scripts/compile-c-to-asm.sh scripts/build-c-labs.sh scripts/build-optimization-lab.sh scripts/build-linker-lab.sh scripts/build-m7-monitor.sh scripts/build-mixed-lab.sh
           scripts/build-c-labs.sh
           scripts/build-optimization-lab.sh
           scripts/build-linker-lab.sh
           scripts/build-m7-monitor.sh
-          make build/test_m7_linker_rom build/test_m7_monitor
+          scripts/build-mixed-lab.sh
+          make build/test_m7_linker_rom build/test_m7_monitor build/test_m7_mixed_rom
           ./build/test_m7_linker_rom build/m7-linker/program.bin
           ./build/test_m7_monitor build/m7-monitor/m7-monitor.bin
+          ./build/test_m7_mixed_rom build/m7-mixed/mixed.bin
           test -s build/compiler-output/03-functions.s
           test -s build/compiler-output/04-pointers.s
           test -s build/compiler-output/05-arrays.s
@@ -80,6 +82,9 @@ jobs:
           test -s build/m7-monitor/monitor.map
           test -s build/m7-monitor/disassembly.txt
           test "$(wc -c < build/m7-monitor/m7-monitor.bin)" -eq 16384
+          test -s build/m7-mixed/mixed.map
+          test -s build/m7-mixed/disassembly.txt
+          test "$(wc -c < build/m7-mixed/mixed.bin)" -eq 16384
 
       - name: Upload M7 linker and monitor artifacts
         uses: actions/upload-artifact@v4
@@ -88,6 +93,7 @@ jobs:
           path: |
             build/m7-linker/
             build/m7-monitor/
+            build/m7-mixed/
           if-no-files-found: error
 
       - name: Inspect representative compiler output
