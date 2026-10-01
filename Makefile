@@ -9,6 +9,9 @@ HW_DECODE_TEST := build/test_hw_decode
 BRINGUP_GEN := build/make_bringup_rom
 BRINGUP_ROM := build/via-blink.bin
 BRINGUP_TEST := build/test_bringup_rom
+IRQ_GEN := build/make_irq_rom
+IRQ_ROM := build/via-irq.bin
+IRQ_TEST := build/test_irq_rom
 KLAUS_BIN ?= build/65C02_extended_opcodes_test.bin
 SIM_SRC := simulator/cpu.c simulator/via.c simulator/serial.c
 
