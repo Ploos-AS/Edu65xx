@@ -19,7 +19,9 @@ uint8_t edu65xx_read8(edu65xx_cpu_t *cpu, uint16_t address)
 {
     uint8_t value;
 
-    if (address >= EDU65XX_VIA_BASE && address <= EDU65XX_VIA_END) {
+    if (cpu->qualification_flat_memory != 0u) {
+        value = cpu->memory[address];
+    } else if (address >= EDU65XX_VIA_BASE && address <= EDU65XX_VIA_END) {
         value = edu65xx_via_read(&cpu->via, (uint8_t)(address - EDU65XX_VIA_BASE));
     } else if (address >= EDU65XX_SERIAL_BASE && address <= EDU65XX_SERIAL_END) {
         value = edu65xx_serial_read(&cpu->serial, (uint8_t)(address - EDU65XX_SERIAL_BASE));
@@ -36,7 +38,9 @@ uint8_t edu65xx_read8(edu65xx_cpu_t *cpu, uint16_t address)
 
 void edu65xx_write8(edu65xx_cpu_t *cpu, uint16_t address, uint8_t value)
 {
-    if (address >= EDU65XX_VIA_BASE && address <= EDU65XX_VIA_END) {
+    if (cpu->qualification_flat_memory != 0u) {
+        cpu->memory[address] = value;
+    } else if (address >= EDU65XX_VIA_BASE && address <= EDU65XX_VIA_END) {
         edu65xx_via_write(&cpu->via, (uint8_t)(address - EDU65XX_VIA_BASE), value);
     } else if (address >= EDU65XX_SERIAL_BASE && address <= EDU65XX_SERIAL_END) {
         edu65xx_serial_write(&cpu->serial, (uint8_t)(address - EDU65XX_SERIAL_BASE), value);
