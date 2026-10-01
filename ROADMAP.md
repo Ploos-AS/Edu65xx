@@ -75,7 +75,7 @@
 
 **M5 status: IN PROGRESS**
 
-- [ ] complete W65C02 execution core
+- [x] complete W65C02 functional execution core
 - [x] enforce canonical memory map
 - [x] ROM/RAM device behavior
 - [x] VIA/serial device routing
