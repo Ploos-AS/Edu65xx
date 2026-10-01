@@ -37,10 +37,10 @@ int main(int argc, char **argv)
         if (machine.last_event == EDU65XX_MACHINE_EVENT_IRQ) {
             saw_irq = 1;
             assert(machine.cpu.pc == 0xC01Eu);
-            assert(machine.cpu.sp == 0xFAu);
-            assert(machine.cpu.memory[0x01FD] == 0xC0u);
-            assert(machine.cpu.memory[0x01FC] == 0x1Cu);
-            assert((machine.cpu.memory[0x01FB] & EDU65XX_FLAG_B) == 0u);
+            assert(machine.cpu.sp == 0xFCu);
+            assert(machine.cpu.memory[0x01FF] == 0xC0u);
+            assert(machine.cpu.memory[0x01FE] == 0x1Cu);
+            assert((machine.cpu.memory[0x01FD] & EDU65XX_FLAG_B) == 0u);
         }
 
         if (saw_irq && (machine.cpu.via.orb & 0x01u) == 0u)
@@ -48,7 +48,7 @@ int main(int argc, char **argv)
 
         if (saw_isr_effect && before == 0xC028u && machine.cpu.pc == 0xC01Cu) {
             saw_rti = 1;
-            assert(machine.cpu.sp == 0xFDu);
+            assert(machine.cpu.sp == 0xFFu);
         }
     }
 
