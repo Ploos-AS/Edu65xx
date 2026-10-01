@@ -99,7 +99,9 @@ hardware-test: $(HW_DECODE_TEST) $(BRINGUP_ROM) $(BRINGUP_TEST) $(IRQ_ROM) $(IRQ
 	./$(RAM_TEST) $(RAM_ROM)
 	./$(RAM_FULL_TEST) $(RAM_FULL_ROM)
 	./$(IRQ_TEST) $(IRQ_ROM)
-	test "$$(wc -c < $(BRINGUP_ROM))" -eq 16384
+	printf 'b C000\nr 1\nq\n' | ./$(DEBUG_CLI) $(BRINGUP_ROM) | grep -q 'stop=BREAKPOINT'
+	printf 'ww 8002\nr 100\nq\n' | ./$(DEBUG_CLI) $(BRINGUP_ROM) | grep -q 'stop=WATCH_WRITE address=8002 data=01'
+	test "$(wc -c < $(BRINGUP_ROM))" -eq 16384
 	test "$$(wc -c < $(RAM_ROM))" -eq 16384
 	test "$$(wc -c < $(RAM_FULL_ROM))" -eq 16384
 	test "$$(wc -c < $(IRQ_ROM))" -eq 16384
