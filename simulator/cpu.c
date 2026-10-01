@@ -23,6 +23,9 @@ uint8_t edu65xx_read8(edu65xx_cpu_t *cpu, uint16_t address)
         value = edu65xx_via_read(&cpu->via, (uint8_t)(address - EDU65XX_VIA_BASE));
     } else if (address >= EDU65XX_SERIAL_BASE && address <= EDU65XX_SERIAL_END) {
         value = edu65xx_serial_read(&cpu->serial, (uint8_t)(address - EDU65XX_SERIAL_BASE));
+    } else if (address >= 0x8000u && address < EDU65XX_ROM_BASE) {
+        /* Unmapped I/O reads use a deterministic simulator convention. */
+        value = 0xFFu;
     } else {
         value = cpu->memory[address];
     }
@@ -37,8 +40,10 @@ void edu65xx_write8(edu65xx_cpu_t *cpu, uint16_t address, uint8_t value)
         edu65xx_via_write(&cpu->via, (uint8_t)(address - EDU65XX_VIA_BASE), value);
     } else if (address >= EDU65XX_SERIAL_BASE && address <= EDU65XX_SERIAL_END) {
         edu65xx_serial_write(&cpu->serial, (uint8_t)(address - EDU65XX_SERIAL_BASE), value);
-    } else if (address < EDU65XX_ROM_BASE) {
+    } else if (address < 0x8000u) {
         cpu->memory[address] = value;
+    } else {
+        /* Unmapped I/O and ROM writes are ignored. */
     }
 
     trace_cycle(cpu, address, value, 1u);
