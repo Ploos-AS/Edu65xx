@@ -4,10 +4,10 @@ This is a **design BOM**, not yet an approved purchasing BOM. Exact manufacturer
 
 | Qty | Function | Requirement | Status |
 |---:|---|---|---|
-| 1 | CPU | W65C02S, DIP-40 | selected |
-| 1 | VIA | W65C22S, DIP-40 | selected |
-| 1 | RAM | 32 KiB x 8, 5 V-compatible, asynchronous SRAM | select exact part |
-| 1 | ROM | at least 16 KiB x 8, 5 V-compatible, programmable | select exact part |
+| 1 | CPU | WDC W65C02S6TPG-14, PDIP-40 | selected |
+| 1 | VIA | WDC W65C22S6TPG-14, PDIP-40 | selected |
+| 1 | RAM | Alliance Memory AS6C62256-55PCN, 32 KiB x 8, PDIP-28, 2.7-5.5 V | selected |
+| 1 | ROM | Microchip AT28C256-15PU, 32 KiB x 8 EEPROM, PDIP-28, 5 V | selected; use one 16 KiB bank |
 | TBD | decode | CMOS logic implementing canonical select equations | schematic pending |
 | 1 | clock | slow, observable bring-up clock plus later normal clock | circuit pending |
 | 1 | reset | power-on + manual reset compatible with W65C02S RESB | circuit pending |
@@ -25,8 +25,7 @@ This is a **design BOM**, not yet an approved purchasing BOM. Exact manufacturer
 
 The exact order list is intentionally blocked on:
 
-- verified DIP package/order codes
-- RAM and ROM pinouts
+- final RAM/ROM control wiring
 - decode schematic
 - reset topology
 - clock topology
