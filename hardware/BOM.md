@@ -20,7 +20,8 @@ This is the Rev A breadboard purchasing baseline. Manufacturer order codes are l
 | 2 | LEDs | PB0 PASS/activity and PB1 FAIL for bring-up | selected |
 | 2 | LED resistors | 1 kOhm, one per PB0/PB1 indicator | selected |
 | 1 | RDY pull-up | 4.7 kOhm | selected |
-| 4 | control pull-ups | 10 kOhm for BE, SOB, NMIB and pre-VIA IRQB | selected |
+| 3 | control pull-ups | 10 kOhm for BE, SOB and NMIB | selected |
+| 1 | temporary bring-up pull-up | 10 kOhm for CPU IRQB only while VIA is absent | optional; remove when VIA installed |
 | 1 | RESET button | normally-open momentary switch to GND on DS1813 reset net | selected |
 | 1 | NMI button | normally-open momentary switch to GND | selected |
 | 8 | input switches/buttons | VIA GPIO experiments | selected |
