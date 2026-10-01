@@ -106,6 +106,8 @@
 - [x] complete pin-numbered Rev A schematic contract from manufacturer datasheets
 - [x] draw graphical Rev A review schematic and perform datasheet/connectivity review
 - [x] publish staged assembly checklist and analyzer channel plans
+- [x] make complete Rev A hardware/ROM qualification a mandatory CI gate
+- [x] publish reproducible `edu65xx-rev-a` CI build artifact
 - [ ] build breadboard system
 - [ ] capture physical RESET/ROM/RAM/VIA/IRQ evidence
 - [ ] qualify physical breadboard system
