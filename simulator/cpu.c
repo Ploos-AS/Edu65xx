@@ -182,6 +182,18 @@ static void shift_memory(edu65xx_cpu_t *cpu, uint16_t address, edu65xx_shift_op_
     edu65xx_write8(cpu, address, result);
 }
 
+static void test_modify_bits(edu65xx_cpu_t *cpu, uint16_t address, int set_bits)
+{
+    uint8_t value = edu65xx_read8(cpu, address);
+    cpu->p &= (uint8_t)~EDU65XX_FLAG_Z;
+    if ((cpu->a & value) == 0u) cpu->p |= EDU65XX_FLAG_Z;
+    if (set_bits)
+        value |= cpu->a;
+    else
+        value &= (uint8_t)~cpu->a;
+    edu65xx_write8(cpu, address, value);
+}
+
 static void compare8(edu65xx_cpu_t *cpu, uint8_t lhs, uint8_t rhs)
 {
     uint8_t result = (uint8_t)(lhs - rhs);
@@ -325,6 +337,28 @@ int edu65xx_cpu_step(edu65xx_cpu_t *cpu)
         return 1;
     }
     opcode = fetch8(cpu);
+
+    /* W65C02 bit-manipulation opcode families encode the bit in bits 6..4. */
+    if ((opcode & 0x0Fu) == 0x07u) { /* RMBn / SMBn zp */
+        uint8_t address = fetch8(cpu);
+        uint8_t value = edu65xx_read8(cpu, address);
+        uint8_t mask = (uint8_t)(1u << ((opcode >> 4) & 7u));
+        if ((opcode & 0x80u) != 0u)
+            value |= mask;
+        else
+            value &= (uint8_t)~mask;
+        edu65xx_write8(cpu, address, value);
+        return 0;
+    }
+    if ((opcode & 0x0Fu) == 0x0Fu) { /* BBRn / BBSn zp,rel */
+        uint8_t address = fetch8(cpu);
+        uint8_t value = edu65xx_read8(cpu, address);
+        uint8_t mask = (uint8_t)(1u << ((opcode >> 4) & 7u));
+        int bit_set = (value & mask) != 0u;
+        int branch_on_set = (opcode & 0x80u) != 0u;
+        branch_relative(cpu, branch_on_set ? bit_set : !bit_set);
+        return 0;
+    }
 
     switch (opcode) {
     case 0xA9: cpu->a = fetch8(cpu); set_nz(cpu, cpu->a); return 0; /* LDA # */
@@ -540,6 +574,11 @@ int edu65xx_cpu_step(edu65xx_cpu_t *cpu)
     case 0x76: shift_memory(cpu, addr_zpx(cpu), EDU65XX_SHIFT_ROR); return 0;
     case 0x6E: shift_memory(cpu, addr_abs(cpu), EDU65XX_SHIFT_ROR); return 0;
     case 0x7E: shift_memory(cpu, addr_absx(cpu), EDU65XX_SHIFT_ROR); return 0;
+
+    case 0x04: test_modify_bits(cpu, addr_zp(cpu), 1); return 0; /* TSB */
+    case 0x0C: test_modify_bits(cpu, addr_abs(cpu), 1); return 0;
+    case 0x14: test_modify_bits(cpu, addr_zp(cpu), 0); return 0; /* TRB */
+    case 0x1C: test_modify_bits(cpu, addr_abs(cpu), 0); return 0;
 
     case 0x18: cpu->p &= (uint8_t)~EDU65XX_FLAG_C; return 0; /* CLC */
     case 0x38: cpu->p |= EDU65XX_FLAG_C; return 0; /* SEC */
