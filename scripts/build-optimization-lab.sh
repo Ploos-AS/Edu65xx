@@ -1,8 +1,8 @@
 #!/bin/sh
 set -eu
 
-CC="${LLVM_MOS_CLANG:-mos-clang}"
-TARGET="${LLVM_MOS_TARGET:-mos65c02}"
+CC="${LLVM_MOS_CLANG:-clang}"
+TARGET="${LLVM_MOS_TARGET:-mosw65c02}"
 PIN=$(sed -n '/^[^#]/p' toolchain/llvm-mos.version | head -n 1)
 
 mkdir -p build/optimization
