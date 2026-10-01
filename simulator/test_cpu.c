@@ -82,6 +82,7 @@ static void test_nmi_entry_and_return(void)
     cpu.memory[0xFFFB] = 0xC1u;
 
     edu65xx_cpu_reset(&cpu);
+    cpu.p |= EDU65XX_FLAG_D;
     edu65xx_cpu_request_nmi(&cpu);
     assert(edu65xx_cpu_step(&cpu) == 2);
     assert(cpu.pc == 0xC100u);
@@ -89,10 +90,13 @@ static void test_nmi_entry_and_return(void)
     assert(cpu.memory[0x01FD] == 0xC0u);
     assert(cpu.memory[0x01FC] == 0x00u);
     assert((cpu.memory[0x01FB] & EDU65XX_FLAG_B) == 0u);
+    assert((cpu.memory[0x01FB] & EDU65XX_FLAG_D) != 0u);
+    assert((cpu.p & EDU65XX_FLAG_D) == 0u);
     assert(cpu.nmi_pending == 0u);
 
     assert(edu65xx_cpu_step(&cpu) == 0);
     assert(cpu.pc == 0xC000u);
+    assert((cpu.p & EDU65XX_FLAG_D) != 0u);
     assert(cpu.sp == 0xFDu);
 }
 
