@@ -87,10 +87,21 @@
 
 ## M6 — Physical computer
 
-- breadboard system
-- debug/test points
-- logic-analyzer exercises
-- Edu65xx Trainer/Computer PCB concept
+**M6 status: IN PROGRESS**
+
+- [x] breadboard architecture and bring-up guide
+- [x] select CPU, VIA, RAM and EEPROM candidates
+- [x] canonical discrete address-decode design
+- [x] debug/test points and analyzer header
+- [x] logic-analyzer exercises
+- [x] first VIA GPIO bring-up ROM source
+- [x] Edu65xx Trainer/Computer PCB concept
+- [ ] complete clock and reset schematic
+- [ ] complete purchasing BOM and wiring/schematic
+- [ ] build breadboard system
+- [ ] capture physical RESET/ROM/RAM/VIA/IRQ evidence
+- [ ] qualify physical breadboard system
+- [ ] create Trainer PCB schematic/layout after breadboard qualification
 
 ## M7 — Advanced 65xx
 
