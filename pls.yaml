@@ -1,0 +1,26 @@
+pls:
+  specification: "0.1"
+  entry_level: 0
+  exit_level: 3
+  status: adopting
+
+resource:
+  title: "Edu65xx"
+  type: course
+  language:
+    - no
+    - en
+  scope: "A practical course for understanding a real 65xx computer from CPU registers and assembly through machine code, buses, memory, I/O, C, simulator/emulator internals and physical hardware."
+  prerequisites: []
+  learning_outcomes:
+    - "Explain how a W65C02S executes instructions using registers, memory, stack, buses and control signals."
+    - "Write and reason about 65C02 assembly and connect it to machine code and bus-visible behavior."
+    - "Relate C source and compiler output to equivalent 65C02 assembly and machine execution."
+    - "Use and inspect readable simulator/emulator implementations and relate them to physical system hardware."
+  review_paths:
+    - "course/**"
+    - "examples/**"
+    - "simulator/**"
+    - "emulator/**"
+    - "hardware/**"
+    - "docs/**"
