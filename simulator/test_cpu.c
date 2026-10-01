@@ -270,6 +270,85 @@ static void test_adc_sbc_addressing(void)
 }
 
 
+
+static void test_brk_php_plp_and_indirect_jumps(void)
+{
+    edu65xx_cpu_t cpu = {0};
+
+    cpu.memory[0xC000] = 0x08; /* PHP */
+    cpu.memory[0xC001] = 0x18; /* CLC */
+    cpu.memory[0xC002] = 0x28; /* PLP */
+    cpu.memory[0xC003] = 0x00; /* BRK */
+    cpu.memory[0xC004] = 0xAA; /* signature byte, skipped */
+    cpu.memory[0xC100] = 0x40; /* RTI */
+    cpu.memory[0xFFFE] = 0x00; cpu.memory[0xFFFF] = 0xC1;
+    set_reset_vector(&cpu, 0xC000u);
+    edu65xx_cpu_reset(&cpu);
+    cpu.p |= EDU65XX_FLAG_C | EDU65XX_FLAG_D;
+
+    assert(edu65xx_cpu_step(&cpu) == 0); /* PHP */
+    assert((cpu.memory[0x01FD] & (EDU65XX_FLAG_B | EDU65XX_FLAG_C)) ==
+           (EDU65XX_FLAG_B | EDU65XX_FLAG_C));
+    assert(edu65xx_cpu_step(&cpu) == 0); /* CLC */
+    assert((cpu.p & EDU65XX_FLAG_C) == 0u);
+    assert(edu65xx_cpu_step(&cpu) == 0); /* PLP */
+    assert((cpu.p & EDU65XX_FLAG_C) != 0u);
+    assert((cpu.p & EDU65XX_FLAG_B) == 0u);
+
+    assert(edu65xx_cpu_step(&cpu) == 0); /* BRK */
+    assert(cpu.pc == 0xC100u);
+    assert(cpu.memory[0x01FC] == 0xC0u);
+    assert(cpu.memory[0x01FB] == 0x05u); /* BRK return address C005 */
+    assert((cpu.memory[0x01FA] & EDU65XX_FLAG_B) != 0u);
+    assert((cpu.memory[0x01FA] & EDU65XX_FLAG_D) != 0u);
+    assert((cpu.p & EDU65XX_FLAG_D) == 0u);
+    assert(edu65xx_cpu_step(&cpu) == 0); /* RTI */
+    assert(cpu.pc == 0xC005u);
+    assert((cpu.p & EDU65XX_FLAG_D) != 0u);
+
+    /* W65C02 fixed indirect JMP page crossing: pointer $20FF reads high at $2100. */
+    cpu.memory[0xC200] = 0x6C; cpu.memory[0xC201] = 0xFF; cpu.memory[0xC202] = 0x20;
+    cpu.memory[0x20FF] = 0x34; cpu.memory[0x2100] = 0x12;
+    cpu.pc = 0xC200u;
+    assert(edu65xx_cpu_step(&cpu) == 0);
+    assert(cpu.pc == 0x1234u);
+
+    /* JMP ($2200,X), X=2 -> pointer at $2202. */
+    cpu.memory[0xC210] = 0x7C; cpu.memory[0xC211] = 0x00; cpu.memory[0xC212] = 0x22;
+    cpu.memory[0x2202] = 0x78; cpu.memory[0x2203] = 0x56;
+    cpu.x = 2u;
+    cpu.pc = 0xC210u;
+    assert(edu65xx_cpu_step(&cpu) == 0);
+    assert(cpu.pc == 0x5678u);
+}
+
+static void test_remaining_conditional_branches(void)
+{
+    edu65xx_cpu_t cpu = {0};
+    struct branch_case {
+        uint8_t opcode;
+        uint8_t flags;
+        int taken;
+    } cases[] = {
+        {0x90u, 0u, 1}, {0x90u, EDU65XX_FLAG_C, 0},
+        {0xB0u, EDU65XX_FLAG_C, 1}, {0xB0u, 0u, 0},
+        {0x30u, EDU65XX_FLAG_N, 1}, {0x30u, 0u, 0},
+        {0x10u, 0u, 1}, {0x10u, EDU65XX_FLAG_N, 0},
+        {0x50u, 0u, 1}, {0x50u, EDU65XX_FLAG_V, 0},
+        {0x70u, EDU65XX_FLAG_V, 1}, {0x70u, 0u, 0}
+    };
+    size_t i;
+
+    for (i = 0; i < sizeof(cases) / sizeof(cases[0]); ++i) {
+        cpu.memory[0xC000] = cases[i].opcode;
+        cpu.memory[0xC001] = 0x02u;
+        cpu.pc = 0xC000u;
+        cpu.p = (uint8_t)(EDU65XX_FLAG_U | cases[i].flags);
+        assert(edu65xx_cpu_step(&cpu) == 0);
+        assert(cpu.pc == (cases[i].taken ? 0xC004u : 0xC002u));
+    }
+}
+
 static void test_shift_rotate_flags_and_memory(void)
 {
     edu65xx_cpu_t cpu = {0};
@@ -548,6 +627,8 @@ int main(void)
     test_adc_sbc_binary_flags();
     test_adc_sbc_decimal_flags();
     test_adc_sbc_addressing();
+    test_brk_php_plp_and_indirect_jumps();
+    test_remaining_conditional_branches();
     test_shift_rotate_flags_and_memory();
     test_logic_status_stack_and_rmw();
     test_indexed_and_indirect_addressing();
