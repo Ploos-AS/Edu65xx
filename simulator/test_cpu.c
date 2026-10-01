@@ -273,6 +273,23 @@ static void test_adc_sbc_addressing(void)
 
 
 
+
+static void test_reserved_nop_lengths(void)
+{
+    edu65xx_cpu_t cpu = {0};
+
+    cpu.memory[0xC000] = 0x02; cpu.memory[0xC001] = 0xAA; /* two-byte NOP */
+    cpu.memory[0xC002] = 0x5C; cpu.memory[0xC003] = 0x34; cpu.memory[0xC004] = 0x12; /* three-byte NOP */
+    cpu.memory[0xC005] = 0x03; /* one-byte NOP */
+    cpu.memory[0xC006] = 0xEB; /* one-byte NOP */
+    cpu.pc = 0xC000u;
+
+    assert(edu65xx_cpu_step(&cpu) == 0); assert(cpu.pc == 0xC002u);
+    assert(edu65xx_cpu_step(&cpu) == 0); assert(cpu.pc == 0xC005u);
+    assert(edu65xx_cpu_step(&cpu) == 0); assert(cpu.pc == 0xC006u);
+    assert(edu65xx_cpu_step(&cpu) == 0); assert(cpu.pc == 0xC007u);
+}
+
 static void assert_via_irq(edu65xx_cpu_t *cpu)
 {
     cpu->via.ier |= EDU65XX_VIA_IFR_T1;
@@ -727,6 +744,7 @@ int main(void)
     test_adc_sbc_binary_flags();
     test_adc_sbc_decimal_flags();
     test_adc_sbc_addressing();
+    test_reserved_nop_lengths();
     test_wai_and_stp_states();
     test_w65c02_bit_manipulation();
     test_brk_php_plp_and_indirect_jumps();
