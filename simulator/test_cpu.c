@@ -271,6 +271,46 @@ static void test_adc_sbc_addressing(void)
 
 
 
+
+static void test_w65c02_bit_manipulation(void)
+{
+    edu65xx_cpu_t cpu = {0};
+
+    cpu.a = 0x0Fu;
+    cpu.memory[0x0020] = 0x30u;
+    cpu.memory[0xC000] = 0x04; cpu.memory[0xC001] = 0x20; /* TSB $20 */
+    cpu.memory[0xC002] = 0x14; cpu.memory[0xC003] = 0x20; /* TRB $20 */
+    cpu.pc = 0xC000u;
+
+    assert(edu65xx_cpu_step(&cpu) == 0);
+    assert(cpu.memory[0x0020] == 0x3Fu);
+    assert((cpu.p & EDU65XX_FLAG_Z) != 0u); /* original $30 & A was zero */
+    assert(edu65xx_cpu_step(&cpu) == 0);
+    assert(cpu.memory[0x0020] == 0x30u);
+    assert((cpu.p & EDU65XX_FLAG_Z) == 0u);
+
+    /* RMB3 then SMB6. */
+    cpu.memory[0x0021] = 0xFFu;
+    cpu.memory[0xC010] = 0x37; cpu.memory[0xC011] = 0x21;
+    cpu.memory[0xC012] = 0xE7; cpu.memory[0xC013] = 0x21;
+    cpu.pc = 0xC010u;
+    assert(edu65xx_cpu_step(&cpu) == 0);
+    assert(cpu.memory[0x0021] == 0xF7u);
+    assert(edu65xx_cpu_step(&cpu) == 0);
+    assert(cpu.memory[0x0021] == 0xF7u); /* bit 6 was already set */
+
+    /* BBR3 sees cleared bit 3 and branches; BBS6 sees set bit 6. */
+    cpu.memory[0xC020] = 0x3F; cpu.memory[0xC021] = 0x21; cpu.memory[0xC022] = 0x02;
+    cpu.pc = 0xC020u;
+    assert(edu65xx_cpu_step(&cpu) == 0);
+    assert(cpu.pc == 0xC025u);
+
+    cpu.memory[0xC030] = 0xEF; cpu.memory[0xC031] = 0x21; cpu.memory[0xC032] = 0xFE;
+    cpu.pc = 0xC030u;
+    assert(edu65xx_cpu_step(&cpu) == 0);
+    assert(cpu.pc == 0xC031u); /* PC after operand+offset is C033, -2 => C031 */
+}
+
 static void test_brk_php_plp_and_indirect_jumps(void)
 {
     edu65xx_cpu_t cpu = {0};
@@ -627,6 +667,7 @@ int main(void)
     test_adc_sbc_binary_flags();
     test_adc_sbc_decimal_flags();
     test_adc_sbc_addressing();
+    test_w65c02_bit_manipulation();
     test_brk_php_plp_and_indirect_jumps();
     test_remaining_conditional_branches();
     test_shift_rotate_flags_and_memory();
