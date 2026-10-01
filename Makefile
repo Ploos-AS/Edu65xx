@@ -5,10 +5,11 @@ SIM := build/edu65xx
 SIM_TEST := build/test_cpu
 EMU_TEST := build/test_machine
 QUAL_TEST := build/klaus65c02
+HW_DECODE_TEST := build/test_hw_decode
 KLAUS_BIN ?= build/65C02_extended_opcodes_test.bin
 SIM_SRC := simulator/cpu.c simulator/via.c simulator/serial.c
 
-.PHONY: all test qualification clean
+.PHONY: all test qualification hardware-test clean
 
 all: $(SIM) test
 
@@ -30,6 +31,12 @@ $(QUAL_TEST): $(SIM_SRC) simulator/cpu.h qualification/klaus65c02.c | build
 qualification: $(QUAL_TEST)
 	test -s "$(KLAUS_BIN)"
 	./$(QUAL_TEST) "$(KLAUS_BIN)"
+
+$(HW_DECODE_TEST): hardware/test_decode.c | build
+	$(CC) $(CFLAGS) hardware/test_decode.c -o $(HW_DECODE_TEST)
+
+hardware-test: $(HW_DECODE_TEST)
+	./$(HW_DECODE_TEST)
 
 test: $(SIM_TEST) $(EMU_TEST)
 	./$(SIM_TEST)
