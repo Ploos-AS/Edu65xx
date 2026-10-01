@@ -125,8 +125,8 @@
 - [x] bounded debugger run and explicit stop reasons
 - [x] interactive debugger CLI
 - [x] first monitor/debugger course lab
-- [ ] linker/memory-layout lab
-- [ ] inspect relocations/symbols/map output
+- [x] linker/memory-layout lab
+- [x] inspect relocations/symbols/map output
 - [ ] mixed C/assembly program
 - [ ] emulator extension exercise
 - [ ] optional W65C816 continuation design
