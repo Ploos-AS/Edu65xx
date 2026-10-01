@@ -8,8 +8,8 @@ resource:
   title: "Edu65xx"
   type: course
   language:
-    - no
-    - en
+    - "no"
+    - "en"
   scope: "A practical course for understanding a real 65xx computer from CPU registers and assembly through machine code, buses, memory, I/O, C, simulator/emulator internals and physical hardware."
   prerequisites: []
   learning_outcomes:
