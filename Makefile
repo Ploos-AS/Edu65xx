@@ -4,6 +4,7 @@ CFLAGS ?= -std=c11 -Wall -Wextra -Wpedantic -Werror -O2
 SIM := build/edu65xx
 SIM_TEST := build/test_cpu
 EMU_TEST := build/test_machine
+DEBUG_TEST := build/test_debugger
 QUAL_TEST := build/klaus65c02
 HW_DECODE_TEST := build/test_hw_decode
 BRINGUP_GEN := build/make_bringup_rom
@@ -37,6 +38,9 @@ $(SIM_TEST): $(SIM_SRC) simulator/cpu.h simulator/via.h simulator/test_cpu.c | b
 
 $(EMU_TEST): $(SIM_SRC) emulator/machine.c emulator/machine.h emulator/monitor_rom.c emulator/monitor_rom.h emulator/test_machine.c | build
 	$(CC) $(CFLAGS) -Isimulator -Iemulator $(SIM_SRC) emulator/machine.c emulator/monitor_rom.c emulator/test_machine.c -o $(EMU_TEST)
+
+$(DEBUG_TEST): $(SIM_SRC) emulator/machine.c emulator/machine.h emulator/debugger.c emulator/debugger.h emulator/test_debugger.c | build
+	$(CC) $(CFLAGS) -Isimulator -Iemulator $(SIM_SRC) emulator/machine.c emulator/debugger.c emulator/test_debugger.c -o $(DEBUG_TEST)
 
 $(QUAL_TEST): $(SIM_SRC) simulator/cpu.h qualification/klaus65c02.c | build
 	$(CC) $(CFLAGS) -Isimulator $(SIM_SRC) qualification/klaus65c02.c -o $(QUAL_TEST)
@@ -105,9 +109,10 @@ rev-a-package: hardware-test
 	printf '%s\n' 'Edu65xx Rev A physical build package' > $(REV_A_DIR)/README.txt
 	printf '%s\n' 'ROM order: via-blink -> ram-smoke -> ram-full -> via-irq' >> $(REV_A_DIR)/README.txt
 
-test: $(SIM_TEST) $(EMU_TEST)
+test: $(SIM_TEST) $(EMU_TEST) $(DEBUG_TEST)
 	./$(SIM_TEST)
 	./$(EMU_TEST)
+	./$(DEBUG_TEST)
 
 clean:
 	rm -rf build
