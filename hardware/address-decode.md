@@ -31,7 +31,21 @@ For an active-low ROM chip select:
 
 The selected AT28C256 is 32 KiB, while Edu65xx exposes 16 KiB ROM. Connect CPU A0..A13 to EEPROM A0..A13 and hold EEPROM A14 at a defined bank-select level. Rev A uses the lower bank.
 
-EEPROM write enable remains inactive during normal execution. Output enable must be controlled so the EEPROM does not drive D0..D7 during CPU write cycles.
+EEPROM write enable remains inactive during normal execution.
+
+Use the CPU read/write signal to prevent bus contention:
+
+```text
+/RD = NOT(RWB)
+
+/ROM_OE = /RD
+/ROM_WE = 1
+
+/RAM_OE = /RD
+/RAM_WE = RWB
+```
+
+Thus ROM and RAM drive D0..D7 only on CPU reads. SRAM write enable becomes active only when the CPU performs a write. A spare NAND gate with its inputs tied together can generate `/RD`.
 
 ### VIA
 
@@ -68,7 +82,7 @@ A transparent discrete implementation is preferred for Rev A:
 For the active-low signals:
 
 ```text
-/VIA_CS = REGION_100_B OR A12 OR A11_A4_NOT_EQUAL_B
+/VIA_CS = REGION_100_B OR A12 OR A11_A4_EQ_B
 ```
 
 where each term is low only for the desired condition. The result is low only for addresses `$8000-$800F`.
