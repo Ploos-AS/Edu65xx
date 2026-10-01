@@ -3,6 +3,7 @@ CFLAGS ?= -std=c11 -Wall -Wextra -Wpedantic -Werror -O2
 
 SIM := build/edu65xx
 SIM_TEST := build/test_cpu
+EMU_TEST := build/test_machine
 SIM_SRC := simulator/cpu.c simulator/via.c simulator/serial.c
 
 .PHONY: all test clean
@@ -18,8 +19,12 @@ $(SIM): $(SIM_SRC) simulator/cpu.h simulator/via.h simulator/serial.h simulator/
 $(SIM_TEST): $(SIM_SRC) simulator/cpu.h simulator/via.h simulator/test_cpu.c | build
 	$(CC) $(CFLAGS) -Isimulator $(SIM_SRC) simulator/test_cpu.c -o $(SIM_TEST)
 
-test: $(SIM_TEST)
+$(EMU_TEST): $(SIM_SRC) emulator/machine.c emulator/machine.h emulator/test_machine.c | build
+	$(CC) $(CFLAGS) -Isimulator -Iemulator $(SIM_SRC) emulator/machine.c emulator/test_machine.c -o $(EMU_TEST)
+
+test: $(SIM_TEST) $(EMU_TEST)
 	./$(SIM_TEST)
+	./$(EMU_TEST)
 
 clean:
 	rm -rf build
