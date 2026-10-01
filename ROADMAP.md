@@ -127,6 +127,6 @@
 - [x] first monitor/debugger course lab
 - [x] linker/memory-layout lab
 - [x] inspect relocations/symbols/map output
-- [ ] mixed C/assembly program
+- [x] mixed C/assembly program
 - [ ] emulator extension exercise
 - [ ] optional W65C816 continuation design
