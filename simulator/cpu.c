@@ -529,12 +529,15 @@ int edu65xx_cpu_step(edu65xx_cpu_t *cpu)
     case 0xC0: compare8(cpu, cpu->y, fetch8(cpu)); return 0; /* CPY */
     case 0xC4: compare8(cpu, cpu->y, edu65xx_read8(cpu, addr_zp(cpu))); return 0;
     case 0xCC: compare8(cpu, cpu->y, edu65xx_read8(cpu, addr_abs(cpu))); return 0;
-    case 0xF0: /* BEQ */
-        branch_relative(cpu, (cpu->p & EDU65XX_FLAG_Z) != 0u); return 0;
-    case 0xD0: /* BNE */
-        branch_relative(cpu, (cpu->p & EDU65XX_FLAG_Z) == 0u); return 0;
-    case 0x80: /* BRA (65C02) */
-        branch_relative(cpu, 1); return 0;
+    case 0xF0: branch_relative(cpu, (cpu->p & EDU65XX_FLAG_Z) != 0u); return 0; /* BEQ */
+    case 0xD0: branch_relative(cpu, (cpu->p & EDU65XX_FLAG_Z) == 0u); return 0; /* BNE */
+    case 0x90: branch_relative(cpu, (cpu->p & EDU65XX_FLAG_C) == 0u); return 0; /* BCC */
+    case 0xB0: branch_relative(cpu, (cpu->p & EDU65XX_FLAG_C) != 0u); return 0; /* BCS */
+    case 0x30: branch_relative(cpu, (cpu->p & EDU65XX_FLAG_N) != 0u); return 0; /* BMI */
+    case 0x10: branch_relative(cpu, (cpu->p & EDU65XX_FLAG_N) == 0u); return 0; /* BPL */
+    case 0x50: branch_relative(cpu, (cpu->p & EDU65XX_FLAG_V) == 0u); return 0; /* BVC */
+    case 0x70: branch_relative(cpu, (cpu->p & EDU65XX_FLAG_V) != 0u); return 0; /* BVS */
+    case 0x80: branch_relative(cpu, 1); return 0; /* BRA */
     case 0xE8: /* INX */
         ++cpu->x; set_nz(cpu, cpu->x); return 0;
     case 0xCA: /* DEX */
