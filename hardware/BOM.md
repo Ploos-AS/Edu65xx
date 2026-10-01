@@ -8,9 +8,12 @@ This is a **design BOM**, not yet an approved purchasing BOM. Exact manufacturer
 | 1 | VIA | WDC W65C22S6TPG-14, PDIP-40 | selected |
 | 1 | RAM | Alliance Memory AS6C62256-55PCN, 32 KiB x 8, PDIP-28, 2.7-5.5 V | selected |
 | 1 | ROM | Microchip AT28C256-15PU, 32 KiB x 8 EEPROM, PDIP-28, 5 V | selected; use one 16 KiB bank |
-| TBD | decode | CMOS logic implementing canonical select equations | schematic pending |
-| 1 | clock | slow, observable bring-up clock plus later normal clock | circuit pending |
-| 1 | reset | power-on + manual reset compatible with W65C02S RESB | circuit pending |
+| 1 | decode | TI SN74HC138N, PDIP-16 | selected |
+| 1 | decode | TI SN74HC688N, PDIP-20 | selected |
+| 1 | decode | TI SN74HC32N, PDIP-14 | selected |
+| 1 | decode/read control | TI SN74HC00N, PDIP-14 | selected |
+| 1 | clock | ECS ECS-100AX-010, 1 MHz, 5 V through-hole oscillator | selected |
+| 1 | reset | Analog Devices/Maxim DS1813-5+, TO-92 reset supervisor with pushbutton support | selected |
 | 1 each | sockets | CPU, VIA, RAM, ROM, decode ICs | required |
 | 1 / IC | decoupling | 100 nF ceramic located at each IC | required |
 | 1+ | bulk decoupling | at power entry | size after supply design |
@@ -26,10 +29,7 @@ This is a **design BOM**, not yet an approved purchasing BOM. Exact manufacturer
 The exact order list is intentionally blocked on:
 
 - final RAM/ROM control wiring
-- decode schematic
-- reset topology
-- clock topology
-- input pull resistor values
+- final pin-by-pin wiring schematic
 - LED current calculation
 - electrical loading review
 
