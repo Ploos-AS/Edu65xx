@@ -636,6 +636,21 @@ int edu65xx_cpu_step(edu65xx_cpu_t *cpu)
     case 0xEA:
         return 0;
     default:
-        return -1;
+        /* W65C02S reserves former undefined NMOS opcodes as NOPs.
+           Their documented byte lengths still advance the PC. */
+        switch (opcode) {
+        case 0x02: case 0x22: case 0x42: case 0x62:
+        case 0x82: case 0xC2: case 0xE2:
+        case 0x44: case 0x54: case 0xD4: case 0xF4:
+            (void)fetch8(cpu);
+            return 0;
+        case 0x5C: case 0xDC: case 0xFC:
+            (void)fetch16(cpu);
+            return 0;
+        default:
+            if ((opcode & 0x0Fu) == 0x03u || (opcode & 0x0Fu) == 0x0Bu)
+                return 0;
+            return -1;
+        }
     }
 }
