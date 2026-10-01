@@ -19,8 +19,8 @@ $(SIM): $(SIM_SRC) simulator/cpu.h simulator/via.h simulator/serial.h simulator/
 $(SIM_TEST): $(SIM_SRC) simulator/cpu.h simulator/via.h simulator/test_cpu.c | build
 	$(CC) $(CFLAGS) -Isimulator $(SIM_SRC) simulator/test_cpu.c -o $(SIM_TEST)
 
-$(EMU_TEST): $(SIM_SRC) emulator/machine.c emulator/machine.h emulator/test_machine.c | build
-	$(CC) $(CFLAGS) -Isimulator -Iemulator $(SIM_SRC) emulator/machine.c emulator/test_machine.c -o $(EMU_TEST)
+$(EMU_TEST): $(SIM_SRC) emulator/machine.c emulator/machine.h emulator/monitor_rom.c emulator/monitor_rom.h emulator/test_machine.c | build
+	$(CC) $(CFLAGS) -Isimulator -Iemulator $(SIM_SRC) emulator/machine.c emulator/monitor_rom.c emulator/test_machine.c -o $(EMU_TEST)
 
 test: $(SIM_TEST) $(EMU_TEST)
 	./$(SIM_TEST)
