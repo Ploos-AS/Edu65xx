@@ -117,7 +117,7 @@
 
 **M7 status: IN PROGRESS**
 
-- [ ] larger multi-module assembly program
+- [x] larger multi-module assembly program
 - [x] expanded serial monitor ROM
 - [x] deterministic host debugger core
 - [x] PC breakpoints
@@ -128,5 +128,5 @@
 - [x] linker/memory-layout lab
 - [x] inspect relocations/symbols/map output
 - [x] mixed C/assembly program
-- [ ] emulator extension exercise
+- [x] emulator extension exercise
 - [ ] optional W65C816 continuation design
