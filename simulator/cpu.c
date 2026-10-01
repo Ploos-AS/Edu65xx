@@ -282,6 +282,8 @@ void edu65xx_cpu_reset(edu65xx_cpu_t *cpu)
     cpu->sp = 0xFDu;
     cpu->p = 0x24u;
     cpu->nmi_pending = 0u;
+    cpu->waiting = 0u;
+    cpu->stopped = 0u;
     edu65xx_via_reset(&cpu->via);
     edu65xx_serial_reset(&cpu->serial);
 
@@ -327,14 +329,29 @@ int edu65xx_cpu_step(edu65xx_cpu_t *cpu)
     uint8_t opcode;
 
     edu65xx_bus_trace_clear(cpu);
+    if (cpu->stopped != 0u) {
+        return 4;
+    }
     if (cpu->nmi_pending != 0u) {
         cpu->nmi_pending = 0u;
+        cpu->waiting = 0u;
         enter_interrupt(cpu, 0xFFFAu);
         return 2;
     }
-    if (edu65xx_via_irq(&cpu->via) && (cpu->p & EDU65XX_FLAG_I) == 0u) {
-        enter_interrupt(cpu, 0xFFFEu);
-        return 1;
+    if (edu65xx_via_irq(&cpu->via)) {
+        if (cpu->waiting != 0u && (cpu->p & EDU65XX_FLAG_I) != 0u) {
+            /* A masked IRQ releases WAI without taking the IRQ vector. */
+            cpu->waiting = 0u;
+            return 3;
+        }
+        if ((cpu->p & EDU65XX_FLAG_I) == 0u) {
+            cpu->waiting = 0u;
+            enter_interrupt(cpu, 0xFFFEu);
+            return 1;
+        }
+    }
+    if (cpu->waiting != 0u) {
+        return 3;
     }
     opcode = fetch8(cpu);
 
@@ -612,6 +629,10 @@ int edu65xx_cpu_step(edu65xx_cpu_t *cpu)
     case 0xCE: inc_memory(cpu, addr_abs(cpu), -1); return 0;
     case 0xDE: inc_memory(cpu, addr_absx(cpu), -1); return 0;
 
+    case 0xCB: /* WAI */
+        cpu->waiting = 1u; return 0;
+    case 0xDB: /* STP */
+        cpu->stopped = 1u; return 0;
     case 0xEA:
         return 0;
     default:
