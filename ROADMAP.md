@@ -115,7 +115,7 @@
 
 ## M7 — Advanced 65xx
 
-**M7 status: IN PROGRESS**
+**M7 status: COMPLETE**
 
 - [x] larger multi-module assembly program
 - [x] expanded serial monitor ROM
@@ -129,4 +129,4 @@
 - [x] inspect relocations/symbols/map output
 - [x] mixed C/assembly program
 - [x] emulator extension exercise
-- [ ] optional W65C816 continuation design
+- [x] optional W65C816 continuation design
