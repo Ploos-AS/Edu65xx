@@ -6,6 +6,7 @@ SIM_TEST := build/test_cpu
 EMU_TEST := build/test_machine
 DEBUG_TEST := build/test_debugger
 DEBUG_CLI := build/edu65xx-debug
+FRONT_PANEL_TEST := build/test_front_panel
 M7_LINK_TEST := build/test_m7_linker_rom
 M7_MONITOR_TEST := build/test_m7_monitor
 M7_MIXED_TEST := build/test_m7_mixed_rom
@@ -49,6 +50,9 @@ $(DEBUG_TEST): $(SIM_SRC) emulator/machine.c emulator/machine.h emulator/debugge
 
 $(DEBUG_CLI): $(SIM_SRC) emulator/machine.c emulator/machine.h emulator/debugger.c emulator/debugger.h emulator/debugger_cli.c | build
 	$(CC) $(CFLAGS) -Isimulator -Iemulator $(SIM_SRC) emulator/machine.c emulator/debugger.c emulator/debugger_cli.c -o $(DEBUG_CLI)
+
+$(FRONT_PANEL_TEST): $(SIM_SRC) emulator/machine.c emulator/machine.h emulator/front_panel.c emulator/front_panel.h emulator/test_front_panel.c | build
+	$(CC) $(CFLAGS) -Isimulator -Iemulator $(SIM_SRC) emulator/machine.c emulator/front_panel.c emulator/test_front_panel.c -o $(FRONT_PANEL_TEST)
 
 $(M7_LINK_TEST): $(SIM_SRC) emulator/machine.c emulator/machine.h emulator/test_m7_linker_rom.c | build
 	$(CC) $(CFLAGS) -Isimulator -Iemulator $(SIM_SRC) emulator/machine.c emulator/test_m7_linker_rom.c -o $(M7_LINK_TEST)
@@ -131,10 +135,11 @@ rev-a-package: hardware-test
 	printf '%s\n' 'Edu65xx Rev A physical build package' > $(REV_A_DIR)/README.txt
 	printf '%s\n' 'ROM order: via-blink -> ram-smoke -> ram-full -> via-irq' >> $(REV_A_DIR)/README.txt
 
-test: $(SIM_TEST) $(EMU_TEST) $(DEBUG_TEST)
+test: $(SIM_TEST) $(EMU_TEST) $(DEBUG_TEST) $(FRONT_PANEL_TEST)
 	./$(SIM_TEST)
 	./$(EMU_TEST)
 	./$(DEBUG_TEST)
+	./$(FRONT_PANEL_TEST)
 
 clean:
 	rm -rf build
