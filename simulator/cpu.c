@@ -61,6 +61,60 @@ static uint16_t fetch16(edu65xx_cpu_t *cpu)
     return (uint16_t)lo | ((uint16_t)hi << 8);
 }
 
+static uint16_t read_zp16(edu65xx_cpu_t *cpu, uint8_t address)
+{
+    uint8_t lo = edu65xx_read8(cpu, address);
+    uint8_t hi = edu65xx_read8(cpu, (uint8_t)(address + 1u));
+    return (uint16_t)lo | ((uint16_t)hi << 8);
+}
+
+static uint16_t addr_zp(edu65xx_cpu_t *cpu)
+{
+    return fetch8(cpu);
+}
+
+static uint16_t addr_zpx(edu65xx_cpu_t *cpu)
+{
+    return (uint8_t)(fetch8(cpu) + cpu->x);
+}
+
+static uint16_t addr_zpy(edu65xx_cpu_t *cpu)
+{
+    return (uint8_t)(fetch8(cpu) + cpu->y);
+}
+
+static uint16_t addr_abs(edu65xx_cpu_t *cpu)
+{
+    return fetch16(cpu);
+}
+
+static uint16_t addr_absx(edu65xx_cpu_t *cpu)
+{
+    return (uint16_t)(fetch16(cpu) + cpu->x);
+}
+
+static uint16_t addr_absy(edu65xx_cpu_t *cpu)
+{
+    return (uint16_t)(fetch16(cpu) + cpu->y);
+}
+
+static uint16_t addr_indx(edu65xx_cpu_t *cpu)
+{
+    uint8_t zp = (uint8_t)(fetch8(cpu) + cpu->x);
+    return read_zp16(cpu, zp);
+}
+
+static uint16_t addr_indy(edu65xx_cpu_t *cpu)
+{
+    uint8_t zp = fetch8(cpu);
+    return (uint16_t)(read_zp16(cpu, zp) + cpu->y);
+}
+
+static uint16_t addr_zp_ind(edu65xx_cpu_t *cpu)
+{
+    return read_zp16(cpu, fetch8(cpu));
+}
+
 static void set_nz(edu65xx_cpu_t *cpu, uint8_t value)
 {
     cpu->p &= (uint8_t)~(EDU65XX_FLAG_N | EDU65XX_FLAG_Z);
@@ -151,28 +205,42 @@ int edu65xx_cpu_step(edu65xx_cpu_t *cpu)
     opcode = fetch8(cpu);
 
     switch (opcode) {
-    case 0xA9:
-        cpu->a = fetch8(cpu); set_nz(cpu, cpu->a); return 0;
-    case 0xA5: {
-        uint8_t address = fetch8(cpu);
-        cpu->a = edu65xx_read8(cpu, address); set_nz(cpu, cpu->a); return 0;
-    }
-    case 0xAD: {
-        uint16_t address = fetch16(cpu);
-        cpu->a = edu65xx_read8(cpu, address); set_nz(cpu, cpu->a); return 0;
-    }
-    case 0x85: {
-        uint8_t address = fetch8(cpu);
-        edu65xx_write8(cpu, address, cpu->a); return 0;
-    }
-    case 0x8D: {
-        uint16_t address = fetch16(cpu);
-        edu65xx_write8(cpu, address, cpu->a); return 0;
-    }
-    case 0xA2:
-        cpu->x = fetch8(cpu); set_nz(cpu, cpu->x); return 0;
-    case 0xA0:
-        cpu->y = fetch8(cpu); set_nz(cpu, cpu->y); return 0;
+    case 0xA9: cpu->a = fetch8(cpu); set_nz(cpu, cpu->a); return 0; /* LDA # */
+    case 0xA5: cpu->a = edu65xx_read8(cpu, addr_zp(cpu)); set_nz(cpu, cpu->a); return 0;
+    case 0xB5: cpu->a = edu65xx_read8(cpu, addr_zpx(cpu)); set_nz(cpu, cpu->a); return 0;
+    case 0xAD: cpu->a = edu65xx_read8(cpu, addr_abs(cpu)); set_nz(cpu, cpu->a); return 0;
+    case 0xBD: cpu->a = edu65xx_read8(cpu, addr_absx(cpu)); set_nz(cpu, cpu->a); return 0;
+    case 0xB9: cpu->a = edu65xx_read8(cpu, addr_absy(cpu)); set_nz(cpu, cpu->a); return 0;
+    case 0xA1: cpu->a = edu65xx_read8(cpu, addr_indx(cpu)); set_nz(cpu, cpu->a); return 0;
+    case 0xB1: cpu->a = edu65xx_read8(cpu, addr_indy(cpu)); set_nz(cpu, cpu->a); return 0;
+    case 0xB2: cpu->a = edu65xx_read8(cpu, addr_zp_ind(cpu)); set_nz(cpu, cpu->a); return 0;
+
+    case 0x85: edu65xx_write8(cpu, addr_zp(cpu), cpu->a); return 0; /* STA */
+    case 0x95: edu65xx_write8(cpu, addr_zpx(cpu), cpu->a); return 0;
+    case 0x8D: edu65xx_write8(cpu, addr_abs(cpu), cpu->a); return 0;
+    case 0x9D: edu65xx_write8(cpu, addr_absx(cpu), cpu->a); return 0;
+    case 0x99: edu65xx_write8(cpu, addr_absy(cpu), cpu->a); return 0;
+    case 0x81: edu65xx_write8(cpu, addr_indx(cpu), cpu->a); return 0;
+    case 0x91: edu65xx_write8(cpu, addr_indy(cpu), cpu->a); return 0;
+    case 0x92: edu65xx_write8(cpu, addr_zp_ind(cpu), cpu->a); return 0;
+
+    case 0xA2: cpu->x = fetch8(cpu); set_nz(cpu, cpu->x); return 0; /* LDX */
+    case 0xA6: cpu->x = edu65xx_read8(cpu, addr_zp(cpu)); set_nz(cpu, cpu->x); return 0;
+    case 0xB6: cpu->x = edu65xx_read8(cpu, addr_zpy(cpu)); set_nz(cpu, cpu->x); return 0;
+    case 0xAE: cpu->x = edu65xx_read8(cpu, addr_abs(cpu)); set_nz(cpu, cpu->x); return 0;
+    case 0xBE: cpu->x = edu65xx_read8(cpu, addr_absy(cpu)); set_nz(cpu, cpu->x); return 0;
+    case 0x86: edu65xx_write8(cpu, addr_zp(cpu), cpu->x); return 0; /* STX */
+    case 0x96: edu65xx_write8(cpu, addr_zpy(cpu), cpu->x); return 0;
+    case 0x8E: edu65xx_write8(cpu, addr_abs(cpu), cpu->x); return 0;
+
+    case 0xA0: cpu->y = fetch8(cpu); set_nz(cpu, cpu->y); return 0; /* LDY */
+    case 0xA4: cpu->y = edu65xx_read8(cpu, addr_zp(cpu)); set_nz(cpu, cpu->y); return 0;
+    case 0xB4: cpu->y = edu65xx_read8(cpu, addr_zpx(cpu)); set_nz(cpu, cpu->y); return 0;
+    case 0xAC: cpu->y = edu65xx_read8(cpu, addr_abs(cpu)); set_nz(cpu, cpu->y); return 0;
+    case 0xBC: cpu->y = edu65xx_read8(cpu, addr_absx(cpu)); set_nz(cpu, cpu->y); return 0;
+    case 0x84: edu65xx_write8(cpu, addr_zp(cpu), cpu->y); return 0; /* STY */
+    case 0x94: edu65xx_write8(cpu, addr_zpx(cpu), cpu->y); return 0;
+    case 0x8C: edu65xx_write8(cpu, addr_abs(cpu), cpu->y); return 0;
     case 0x69: {
         uint8_t value = fetch8(cpu);
         uint16_t sum = (uint16_t)cpu->a + (uint16_t)value;
@@ -215,8 +283,21 @@ int edu65xx_cpu_step(edu65xx_cpu_t *cpu)
         ++cpu->pc;
         return 0;
     }
-    case 0xC9: /* CMP #imm */
-        compare8(cpu, cpu->a, fetch8(cpu)); return 0;
+    case 0xC9: compare8(cpu, cpu->a, fetch8(cpu)); return 0; /* CMP */
+    case 0xC5: compare8(cpu, cpu->a, edu65xx_read8(cpu, addr_zp(cpu))); return 0;
+    case 0xD5: compare8(cpu, cpu->a, edu65xx_read8(cpu, addr_zpx(cpu))); return 0;
+    case 0xCD: compare8(cpu, cpu->a, edu65xx_read8(cpu, addr_abs(cpu))); return 0;
+    case 0xDD: compare8(cpu, cpu->a, edu65xx_read8(cpu, addr_absx(cpu))); return 0;
+    case 0xD9: compare8(cpu, cpu->a, edu65xx_read8(cpu, addr_absy(cpu))); return 0;
+    case 0xC1: compare8(cpu, cpu->a, edu65xx_read8(cpu, addr_indx(cpu))); return 0;
+    case 0xD1: compare8(cpu, cpu->a, edu65xx_read8(cpu, addr_indy(cpu))); return 0;
+    case 0xD2: compare8(cpu, cpu->a, edu65xx_read8(cpu, addr_zp_ind(cpu))); return 0;
+    case 0xE0: compare8(cpu, cpu->x, fetch8(cpu)); return 0; /* CPX */
+    case 0xE4: compare8(cpu, cpu->x, edu65xx_read8(cpu, addr_zp(cpu))); return 0;
+    case 0xEC: compare8(cpu, cpu->x, edu65xx_read8(cpu, addr_abs(cpu))); return 0;
+    case 0xC0: compare8(cpu, cpu->y, fetch8(cpu)); return 0; /* CPY */
+    case 0xC4: compare8(cpu, cpu->y, edu65xx_read8(cpu, addr_zp(cpu))); return 0;
+    case 0xCC: compare8(cpu, cpu->y, edu65xx_read8(cpu, addr_abs(cpu))); return 0;
     case 0xF0: /* BEQ */
         branch_relative(cpu, (cpu->p & EDU65XX_FLAG_Z) != 0u); return 0;
     case 0xD0: /* BNE */
