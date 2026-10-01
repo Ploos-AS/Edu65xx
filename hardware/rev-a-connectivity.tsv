@@ -98,7 +98,7 @@ U3	16	DQ4	D4	bidirectional
 U3	17	DQ5	D5	bidirectional
 U3	18	DQ6	D6	bidirectional
 U3	19	DQ7	D7	bidirectional
-U3	20	CEB	/RAM_CS	input
+U3	20	CEB	A15	input
 U3	21	A10	A10	input
 U3	22	OEB	/RD	input
 U3	23	A11	A11	input
