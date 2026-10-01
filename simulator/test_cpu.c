@@ -269,6 +269,52 @@ static void test_adc_sbc_addressing(void)
     assert(cpu.a == 0x12u);
 }
 
+
+static void test_shift_rotate_flags_and_memory(void)
+{
+    edu65xx_cpu_t cpu = {0};
+
+    cpu.p = EDU65XX_FLAG_U;
+    cpu.a = 0x80u;
+    run_imm(&cpu, 0x0Au, 0x00u); /* ASL A; operand byte ignored by one-byte opcode */
+    assert(cpu.a == 0x00u);
+    assert((cpu.p & EDU65XX_FLAG_C) != 0u);
+    assert((cpu.p & EDU65XX_FLAG_Z) != 0u);
+
+    cpu.p = EDU65XX_FLAG_U | EDU65XX_FLAG_C;
+    cpu.a = 0x00u;
+    cpu.memory[0xC000] = 0x2Au; /* ROL A */
+    cpu.pc = 0xC000u;
+    assert(edu65xx_cpu_step(&cpu) == 0);
+    assert(cpu.a == 0x01u);
+    assert((cpu.p & EDU65XX_FLAG_C) == 0u);
+
+    cpu.p = EDU65XX_FLAG_U | EDU65XX_FLAG_C;
+    cpu.a = 0x01u;
+    cpu.memory[0xC000] = 0x6Au; /* ROR A */
+    cpu.pc = 0xC000u;
+    assert(edu65xx_cpu_step(&cpu) == 0);
+    assert(cpu.a == 0x80u);
+    assert((cpu.p & EDU65XX_FLAG_C) != 0u);
+    assert((cpu.p & EDU65XX_FLAG_N) != 0u);
+
+    cpu.p = EDU65XX_FLAG_U;
+    cpu.memory[0x0020] = 0x03u;
+    cpu.memory[0xC000] = 0x46; cpu.memory[0xC001] = 0x20; /* LSR $20 */
+    cpu.pc = 0xC000u;
+    assert(edu65xx_cpu_step(&cpu) == 0);
+    assert(cpu.memory[0x0020] == 0x01u);
+    assert((cpu.p & EDU65XX_FLAG_C) != 0u);
+
+    cpu.x = 1u;
+    cpu.memory[0x2001] = 0x40u;
+    cpu.memory[0xC000] = 0x1E; cpu.memory[0xC001] = 0x00; cpu.memory[0xC002] = 0x20; /* ASL $2000,X */
+    cpu.pc = 0xC000u;
+    assert(edu65xx_cpu_step(&cpu) == 0);
+    assert(cpu.memory[0x2001] == 0x80u);
+    assert((cpu.p & EDU65XX_FLAG_N) != 0u);
+}
+
 static void test_logic_status_stack_and_rmw(void)
 {
     edu65xx_cpu_t cpu = {0};
@@ -502,6 +548,7 @@ int main(void)
     test_adc_sbc_binary_flags();
     test_adc_sbc_decimal_flags();
     test_adc_sbc_addressing();
+    test_shift_rotate_flags_and_memory();
     test_logic_status_stack_and_rmw();
     test_indexed_and_indirect_addressing();
     test_compare_family();
