@@ -274,6 +274,29 @@ static void test_adc_sbc_addressing(void)
 
 
 
+
+static void test_all_256_opcodes_dispatch(void)
+{
+    unsigned opcode;
+
+    for (opcode = 0u; opcode <= 0xFFu; ++opcode) {
+        edu65xx_cpu_t cpu = {0};
+        int result;
+
+        cpu.pc = 0xC000u;
+        cpu.sp = 0xFDu;
+        cpu.p = EDU65XX_FLAG_U | EDU65XX_FLAG_I;
+        cpu.memory[0xC000] = (uint8_t)opcode;
+        cpu.memory[0xC001] = 0x00u;
+        cpu.memory[0xC002] = 0x00u;
+        cpu.memory[0xFFFA] = 0x00u; cpu.memory[0xFFFB] = 0xC0u;
+        cpu.memory[0xFFFE] = 0x00u; cpu.memory[0xFFFF] = 0xC0u;
+
+        result = edu65xx_cpu_step(&cpu);
+        assert(result >= 0);
+    }
+}
+
 static void test_reserved_nop_lengths(void)
 {
     edu65xx_cpu_t cpu = {0};
@@ -744,6 +767,7 @@ int main(void)
     test_adc_sbc_binary_flags();
     test_adc_sbc_decimal_flags();
     test_adc_sbc_addressing();
+    test_all_256_opcodes_dispatch();
     test_reserved_nop_lengths();
     test_wai_and_stp_states();
     test_w65c02_bit_manipulation();
