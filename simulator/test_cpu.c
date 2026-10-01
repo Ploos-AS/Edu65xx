@@ -169,6 +169,106 @@ static void test_serial_terminal(void)
 
 
 
+
+static void run_imm(edu65xx_cpu_t *cpu, uint8_t opcode, uint8_t operand)
+{
+    cpu->memory[0xC000] = opcode;
+    cpu->memory[0xC001] = operand;
+    cpu->pc = 0xC000u;
+    assert(edu65xx_cpu_step(cpu) == 0);
+}
+
+static void test_adc_sbc_binary_flags(void)
+{
+    edu65xx_cpu_t cpu = {0};
+
+    cpu.p = EDU65XX_FLAG_U;
+    cpu.a = 0x50u;
+    run_imm(&cpu, 0x69u, 0x50u); /* ADC #$50 */
+    assert(cpu.a == 0xA0u);
+    assert((cpu.p & EDU65XX_FLAG_V) != 0u);
+    assert((cpu.p & EDU65XX_FLAG_N) != 0u);
+    assert((cpu.p & EDU65XX_FLAG_C) == 0u);
+
+    cpu.p = EDU65XX_FLAG_U;
+    cpu.a = 0xFFu;
+    run_imm(&cpu, 0x69u, 0x01u);
+    assert(cpu.a == 0x00u);
+    assert((cpu.p & EDU65XX_FLAG_C) != 0u);
+    assert((cpu.p & EDU65XX_FLAG_Z) != 0u);
+    assert((cpu.p & EDU65XX_FLAG_V) == 0u);
+
+    cpu.p = EDU65XX_FLAG_U | EDU65XX_FLAG_C;
+    cpu.a = 0x80u;
+    run_imm(&cpu, 0xE9u, 0x01u); /* SBC #$01 */
+    assert(cpu.a == 0x7Fu);
+    assert((cpu.p & EDU65XX_FLAG_C) != 0u);
+    assert((cpu.p & EDU65XX_FLAG_V) != 0u);
+    assert((cpu.p & EDU65XX_FLAG_N) == 0u);
+
+    cpu.p = EDU65XX_FLAG_U | EDU65XX_FLAG_C;
+    cpu.a = 0x00u;
+    run_imm(&cpu, 0xE9u, 0x01u);
+    assert(cpu.a == 0xFFu);
+    assert((cpu.p & EDU65XX_FLAG_C) == 0u);
+    assert((cpu.p & EDU65XX_FLAG_N) != 0u);
+}
+
+static void test_adc_sbc_decimal_flags(void)
+{
+    edu65xx_cpu_t cpu = {0};
+
+    cpu.p = EDU65XX_FLAG_U | EDU65XX_FLAG_D;
+    cpu.a = 0x45u;
+    run_imm(&cpu, 0x69u, 0x55u); /* 45 + 55 = 100 */
+    assert(cpu.a == 0x00u);
+    assert((cpu.p & EDU65XX_FLAG_C) != 0u);
+    assert((cpu.p & EDU65XX_FLAG_Z) != 0u);
+    assert((cpu.p & EDU65XX_FLAG_N) == 0u);
+
+    cpu.p = EDU65XX_FLAG_U | EDU65XX_FLAG_D | EDU65XX_FLAG_C;
+    cpu.a = 0x50u;
+    run_imm(&cpu, 0xE9u, 0x01u); /* 50 - 01 = 49 */
+    assert(cpu.a == 0x49u);
+    assert((cpu.p & EDU65XX_FLAG_C) != 0u);
+    assert((cpu.p & EDU65XX_FLAG_Z) == 0u);
+
+    cpu.p = EDU65XX_FLAG_U | EDU65XX_FLAG_D | EDU65XX_FLAG_C;
+    cpu.a = 0x00u;
+    run_imm(&cpu, 0xE9u, 0x01u); /* 00 - 01 = 99 with borrow */
+    assert(cpu.a == 0x99u);
+    assert((cpu.p & EDU65XX_FLAG_C) == 0u);
+    assert((cpu.p & EDU65XX_FLAG_N) != 0u);
+}
+
+static void test_adc_sbc_addressing(void)
+{
+    edu65xx_cpu_t cpu = {0};
+
+    /* ADC ($20) using the W65C02 zero-page indirect mode. */
+    cpu.memory[0x0020] = 0x00u;
+    cpu.memory[0x0021] = 0x20u;
+    cpu.memory[0x2000] = 0x05u;
+    cpu.memory[0xC000] = 0xA9; cpu.memory[0xC001] = 0x10;
+    cpu.memory[0xC002] = 0x72; cpu.memory[0xC003] = 0x20;
+
+    /* SBC $2000,X */
+    cpu.memory[0x2001] = 0x03u;
+    cpu.memory[0xC004] = 0x38; /* SEC */
+    cpu.memory[0xC005] = 0xA2; cpu.memory[0xC006] = 0x01;
+    cpu.memory[0xC007] = 0xFD; cpu.memory[0xC008] = 0x00; cpu.memory[0xC009] = 0x20;
+    set_reset_vector(&cpu, 0xC000u);
+    edu65xx_cpu_reset(&cpu);
+
+    assert(edu65xx_cpu_step(&cpu) == 0);
+    assert(edu65xx_cpu_step(&cpu) == 0);
+    assert(cpu.a == 0x15u);
+    assert(edu65xx_cpu_step(&cpu) == 0);
+    assert(edu65xx_cpu_step(&cpu) == 0);
+    assert(edu65xx_cpu_step(&cpu) == 0);
+    assert(cpu.a == 0x12u);
+}
+
 static void test_logic_status_stack_and_rmw(void)
 {
     edu65xx_cpu_t cpu = {0};
@@ -399,6 +499,9 @@ int main(void)
     test_nmi_entry_and_return();
     test_timer_irq_rti();
     test_serial_terminal();
+    test_adc_sbc_binary_flags();
+    test_adc_sbc_decimal_flags();
+    test_adc_sbc_addressing();
     test_logic_status_stack_and_rmw();
     test_indexed_and_indirect_addressing();
     test_compare_family();
