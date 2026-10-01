@@ -82,7 +82,7 @@
 - [x] deterministic machine-step API
 - [x] ROM boot/reset-vector tests
 - [x] deterministic device-tick tests
-- [ ] execute a monitor ROM end to end
+- [x] execute a monitor ROM end to end
 - [ ] complete M5 qualification suite
 
 ## M6 — Physical computer
