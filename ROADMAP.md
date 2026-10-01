@@ -115,8 +115,18 @@
 
 ## M7 — Advanced 65xx
 
-- larger programs
-- monitor/debugger
-- toolchain internals
-- emulator extension exercises
-- optional W65C816 path
+**M7 status: IN PROGRESS**
+
+- [ ] larger multi-module assembly program
+- [ ] expanded serial monitor ROM
+- [x] deterministic host debugger core
+- [x] PC breakpoints
+- [x] read/write bus watchpoints
+- [x] bounded debugger run and explicit stop reasons
+- [ ] interactive debugger CLI
+- [ ] monitor/debugger course labs
+- [ ] linker/memory-layout lab
+- [ ] inspect relocations/symbols/map output
+- [ ] mixed C/assembly program
+- [ ] emulator extension exercise
+- [ ] optional W65C816 continuation design
