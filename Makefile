@@ -6,6 +6,9 @@ SIM_TEST := build/test_cpu
 EMU_TEST := build/test_machine
 QUAL_TEST := build/klaus65c02
 HW_DECODE_TEST := build/test_hw_decode
+BRINGUP_GEN := build/make_bringup_rom
+BRINGUP_ROM := build/via-blink.bin
+BRINGUP_TEST := build/test_bringup_rom
 KLAUS_BIN ?= build/65C02_extended_opcodes_test.bin
 SIM_SRC := simulator/cpu.c simulator/via.c simulator/serial.c
 
@@ -35,8 +38,19 @@ qualification: $(QUAL_TEST)
 $(HW_DECODE_TEST): hardware/test_decode.c | build
 	$(CC) $(CFLAGS) hardware/test_decode.c -o $(HW_DECODE_TEST)
 
-hardware-test: $(HW_DECODE_TEST)
+$(BRINGUP_GEN): rom/bringup/make_image.c | build
+	$(CC) $(CFLAGS) rom/bringup/make_image.c -o $(BRINGUP_GEN)
+
+$(BRINGUP_ROM): $(BRINGUP_GEN)
+	./$(BRINGUP_GEN) $(BRINGUP_ROM)
+
+$(BRINGUP_TEST): $(SIM_SRC) emulator/machine.c emulator/machine.h hardware/test_bringup_rom.c | build
+	$(CC) $(CFLAGS) -Isimulator -Iemulator $(SIM_SRC) emulator/machine.c hardware/test_bringup_rom.c -o $(BRINGUP_TEST)
+
+hardware-test: $(HW_DECODE_TEST) $(BRINGUP_ROM) $(BRINGUP_TEST)
 	./$(HW_DECODE_TEST)
+	./$(BRINGUP_TEST) $(BRINGUP_ROM)
+	test "$(wc -c < $(BRINGUP_ROM))" -eq 16384
 
 test: $(SIM_TEST) $(EMU_TEST)
 	./$(SIM_TEST)
