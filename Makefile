@@ -92,7 +92,7 @@ $(RAM_FULL_ROM): $(RAM_FULL_GEN)
 $(RAM_FULL_TEST): $(SIM_SRC) emulator/machine.c emulator/machine.h hardware/test_ram_full_rom.c | build
 	$(CC) $(CFLAGS) -Isimulator -Iemulator $(SIM_SRC) emulator/machine.c hardware/test_ram_full_rom.c -o $(RAM_FULL_TEST)
 
-hardware-test: $(HW_DECODE_TEST) $(BRINGUP_ROM) $(BRINGUP_TEST) $(IRQ_ROM) $(IRQ_TEST) $(RAM_ROM) $(RAM_TEST) $(RAM_FULL_ROM) $(RAM_FULL_TEST)
+hardware-test: $(DEBUG_CLI) $(HW_DECODE_TEST) $(BRINGUP_ROM) $(BRINGUP_TEST) $(IRQ_ROM) $(IRQ_TEST) $(RAM_ROM) $(RAM_TEST) $(RAM_FULL_ROM) $(RAM_FULL_TEST)
 	python3 hardware/check_connectivity.py
 	./$(HW_DECODE_TEST)
 	./$(BRINGUP_TEST) $(BRINGUP_ROM)
