@@ -5,12 +5,12 @@
 reset:
         sei
         cld
-        ldx #$ff
+        ldx #0xff
         txs
 
         lda #21
         jsr double_a
-        sta $0200
+        sta 0x0200
         stp
 
         .section .vectors,"a"
