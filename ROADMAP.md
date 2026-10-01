@@ -99,7 +99,8 @@
 - [x] complete clock and reset design
 - [x] complete Rev A purchasing baseline
 - [x] complete net-level breadboard wiring contract
-- [ ] draw/review pin-numbered schematic from manufacturer datasheets
+- [x] complete pin-numbered Rev A schematic contract from manufacturer datasheets
+- [ ] draw graphical schematic and perform independent connectivity review
 - [ ] build breadboard system
 - [ ] capture physical RESET/ROM/RAM/VIA/IRQ evidence
 - [ ] qualify physical breadboard system
