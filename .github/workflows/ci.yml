@@ -15,6 +15,16 @@ jobs:
       - name: Build and test
         run: make all
 
+      - name: Rev A hardware design and ROM qualification
+        run: make rev-a-package
+
+      - name: Upload Rev A build package
+        uses: actions/upload-artifact@v4
+        with:
+          name: edu65xx-rev-a
+          path: build/rev-a/
+          if-no-files-found: error
+
       - name: External W65C02 functional qualification
         run: |
           curl -L --fail -o build/65C02_extended_opcodes_test.bin \
