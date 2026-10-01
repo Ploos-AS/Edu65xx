@@ -81,6 +81,15 @@ jobs:
           test -s build/m7-monitor/disassembly.txt
           test "$(wc -c < build/m7-monitor/m7-monitor.bin)" -eq 16384
 
+      - name: Upload M7 linker and monitor artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: edu65xx-m7
+          path: |
+            build/m7-linker/
+            build/m7-monitor/
+          if-no-files-found: error
+
       - name: Inspect representative compiler output
         run: |
           echo '=== functions O1 ==='
