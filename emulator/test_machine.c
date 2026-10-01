@@ -2,6 +2,46 @@
 #include <stdio.h>
 
 #include "machine.h"
+#include "monitor_rom.h"
+
+
+static void run_until_tx(edu65xx_machine_t *machine, size_t count)
+{
+    size_t guard = 2000u;
+    while (machine->cpu.serial.tx_count < count && guard-- != 0u) {
+        assert(edu65xx_machine_step(machine) == 0);
+    }
+    assert(machine->cpu.serial.tx_count >= count);
+}
+
+static void test_monitor_rom_end_to_end(void)
+{
+    static const char banner[] = "Edu65xx ready\r\n";
+    static const char help[] = "? help\r\n";
+    edu65xx_machine_t machine;
+    size_t i;
+
+    edu65xx_machine_init(&machine);
+    assert(edu65xx_machine_load_rom(&machine, edu65xx_monitor_rom,
+                                    sizeof(edu65xx_monitor_rom), 0u) == 0);
+    edu65xx_machine_reset(&machine);
+    assert(machine.cpu.pc == 0xC000u);
+
+    run_until_tx(&machine, sizeof(banner) - 1u);
+    for (i = 0; i < sizeof(banner) - 1u; ++i) {
+        assert(machine.cpu.serial.tx[i] == (uint8_t)banner[i]);
+    }
+
+    /* Input is injected at the device boundary; output must still be
+       produced by monitor instructions executing through the machine. */
+    edu65xx_serial_receive(&machine.cpu.serial, '?');
+    run_until_tx(&machine, (sizeof(banner) - 1u) + (sizeof(help) - 1u));
+
+    for (i = 0; i < sizeof(help) - 1u; ++i) {
+        assert(machine.cpu.serial.tx[(sizeof(banner) - 1u) + i] ==
+               (uint8_t)help[i]);
+    }
+}
 
 static void test_rom_boot_and_serial(void)
 {
@@ -69,6 +109,7 @@ static void test_deterministic_device_tick(void)
 
 int main(void)
 {
+    test_monitor_rom_end_to_end();
     test_rom_boot_and_serial();
     test_rom_bounds();
     test_deterministic_device_tick();
