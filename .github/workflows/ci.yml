@@ -59,12 +59,14 @@ jobs:
 
       - name: Generate M4 assembly
         run: |
-          chmod +x scripts/compile-c-to-asm.sh scripts/build-c-labs.sh scripts/build-optimization-lab.sh scripts/build-linker-lab.sh
+          chmod +x scripts/compile-c-to-asm.sh scripts/build-c-labs.sh scripts/build-optimization-lab.sh scripts/build-linker-lab.sh scripts/build-m7-monitor.sh
           scripts/build-c-labs.sh
           scripts/build-optimization-lab.sh
           scripts/build-linker-lab.sh
-          make build/test_m7_linker_rom
+          scripts/build-m7-monitor.sh
+          make build/test_m7_linker_rom build/test_m7_monitor
           ./build/test_m7_linker_rom build/m7-linker/program.bin
+          ./build/test_m7_monitor build/m7-monitor/m7-monitor.bin
           test -s build/compiler-output/03-functions.s
           test -s build/compiler-output/04-pointers.s
           test -s build/compiler-output/05-arrays.s
@@ -75,6 +77,9 @@ jobs:
           test -s build/m7-linker/readelf.txt
           test -s build/m7-linker/disassembly.txt
           test "$(wc -c < build/m7-linker/program.bin)" -eq 16384
+          test -s build/m7-monitor/monitor.map
+          test -s build/m7-monitor/disassembly.txt
+          test "$(wc -c < build/m7-monitor/m7-monitor.bin)" -eq 16384
 
       - name: Inspect representative compiler output
         run: |
