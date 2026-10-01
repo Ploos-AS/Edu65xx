@@ -15,6 +15,9 @@ IRQ_TEST := build/test_irq_rom
 RAM_GEN := build/make_ram_smoke_rom
 RAM_ROM := build/ram-smoke.bin
 RAM_TEST := build/test_ram_smoke_rom
+RAM_FULL_GEN := build/make_ram_full_rom
+RAM_FULL_ROM := build/ram-full.bin
+RAM_FULL_TEST := build/test_ram_full_rom
 KLAUS_BIN ?= build/65C02_extended_opcodes_test.bin
 SIM_SRC := simulator/cpu.c simulator/via.c simulator/serial.c
 
