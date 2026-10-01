@@ -123,8 +123,8 @@
 - [x] PC breakpoints
 - [x] read/write bus watchpoints
 - [x] bounded debugger run and explicit stop reasons
-- [ ] interactive debugger CLI
-- [ ] monitor/debugger course labs
+- [x] interactive debugger CLI
+- [x] first monitor/debugger course lab
 - [ ] linker/memory-layout lab
 - [ ] inspect relocations/symbols/map output
 - [ ] mixed C/assembly program
