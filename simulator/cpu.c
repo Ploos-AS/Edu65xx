@@ -68,6 +68,22 @@ static void set_nz(edu65xx_cpu_t *cpu, uint8_t value)
     if ((value & 0x80u) != 0u) cpu->p |= EDU65XX_FLAG_N;
 }
 
+static void compare8(edu65xx_cpu_t *cpu, uint8_t lhs, uint8_t rhs)
+{
+    uint8_t result = (uint8_t)(lhs - rhs);
+    cpu->p &= (uint8_t)~EDU65XX_FLAG_C;
+    if (lhs >= rhs) cpu->p |= EDU65XX_FLAG_C;
+    set_nz(cpu, result);
+}
+
+static void branch_relative(edu65xx_cpu_t *cpu, int condition)
+{
+    int8_t offset = (int8_t)fetch8(cpu);
+    if (condition) {
+        cpu->pc = (uint16_t)(cpu->pc + offset);
+    }
+}
+
 void edu65xx_cpu_reset(edu65xx_cpu_t *cpu)
 {
     uint8_t lo;
@@ -182,6 +198,47 @@ int edu65xx_cpu_step(edu65xx_cpu_t *cpu)
         cpu->p &= (uint8_t)~EDU65XX_FLAG_I; return 0;
     case 0x78: /* SEI */
         cpu->p |= EDU65XX_FLAG_I; return 0;
+    case 0x4C: /* JMP abs */
+        cpu->pc = fetch16(cpu); return 0;
+    case 0x20: { /* JSR abs */
+        uint16_t target = fetch16(cpu);
+        uint16_t return_address = (uint16_t)(cpu->pc - 1u);
+        push8(cpu, (uint8_t)(return_address >> 8));
+        push8(cpu, (uint8_t)return_address);
+        cpu->pc = target;
+        return 0;
+    }
+    case 0x60: { /* RTS */
+        uint8_t lo = pull8(cpu);
+        uint8_t hi = pull8(cpu);
+        cpu->pc = (uint16_t)(((uint16_t)hi << 8) | lo);
+        ++cpu->pc;
+        return 0;
+    }
+    case 0xC9: /* CMP #imm */
+        compare8(cpu, cpu->a, fetch8(cpu)); return 0;
+    case 0xF0: /* BEQ */
+        branch_relative(cpu, (cpu->p & EDU65XX_FLAG_Z) != 0u); return 0;
+    case 0xD0: /* BNE */
+        branch_relative(cpu, (cpu->p & EDU65XX_FLAG_Z) == 0u); return 0;
+    case 0x80: /* BRA (65C02) */
+        branch_relative(cpu, 1); return 0;
+    case 0xE8: /* INX */
+        ++cpu->x; set_nz(cpu, cpu->x); return 0;
+    case 0xCA: /* DEX */
+        --cpu->x; set_nz(cpu, cpu->x); return 0;
+    case 0xC8: /* INY */
+        ++cpu->y; set_nz(cpu, cpu->y); return 0;
+    case 0x88: /* DEY */
+        --cpu->y; set_nz(cpu, cpu->y); return 0;
+    case 0xAA: /* TAX */
+        cpu->x = cpu->a; set_nz(cpu, cpu->x); return 0;
+    case 0x8A: /* TXA */
+        cpu->a = cpu->x; set_nz(cpu, cpu->a); return 0;
+    case 0xA8: /* TAY */
+        cpu->y = cpu->a; set_nz(cpu, cpu->y); return 0;
+    case 0x98: /* TYA */
+        cpu->a = cpu->y; set_nz(cpu, cpu->a); return 0;
     case 0xEA:
         return 0;
     default:
