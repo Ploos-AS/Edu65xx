@@ -12,6 +12,9 @@ BRINGUP_TEST := build/test_bringup_rom
 IRQ_GEN := build/make_irq_rom
 IRQ_ROM := build/via-irq.bin
 IRQ_TEST := build/test_irq_rom
+RAM_GEN := build/make_ram_smoke_rom
+RAM_ROM := build/ram-smoke.bin
+RAM_TEST := build/test_ram_smoke_rom
 KLAUS_BIN ?= build/65C02_extended_opcodes_test.bin
 SIM_SRC := simulator/cpu.c simulator/via.c simulator/serial.c
 
