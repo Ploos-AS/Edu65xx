@@ -115,16 +115,18 @@ WDC documents that PHI2 controls data transfers for the W65C22S and that RS0-RS3
 
 ## Inputs that must not float
 
-Before power-up, every CPU control input must have an intentional level or an intentional driving circuit. In particular review:
+Before power-up, every CPU control input must have an intentional level or an intentional driving circuit.
 
-- `BE`
-- `RDY`
-- `IRQB`
-- `NMIB`
-- `RESB`
-- `SOB`
+For W65C02S, unused input-only control pins are held high. Rev A therefore uses:
 
-Do not copy pull-up/pull-down values from an unrelated 6502 design. Choose them from the W65C02S electrical specification and the actual clock/reset circuit.
+- `BE`: high
+- `SOB`: high
+- `NMIB`: high, with the later NMI experiment able to create a falling edge
+- `IRQB`: high until the VIA IRQ connection is installed
+- `RDY`: external pull-up; WDC specifically notes that current W65C02S devices no longer provide an active pull-up and WAI uses this bidirectional pin
+- `RESB`: reset circuit; it must remain low for at least two clock cycles after VDD reaches its operating level
+
+The exact resistor values remain a schematic calculation, not a copied folklore value.
 
 ## First ROM
 
