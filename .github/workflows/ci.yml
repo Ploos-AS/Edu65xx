@@ -18,7 +18,46 @@ jobs:
       - name: Validate C bridge inputs
         run: |
           test -s toolchain/llvm-mos.version
-          test -x scripts/compile-c-to-asm.sh || test -s scripts/compile-c-to-asm.sh
           grep -q -- '--target=mos' scripts/compile-c-to-asm.sh
           grep -q -- 'mos65c02' scripts/compile-c-to-asm.sh
-          test -s examples/c/02-memory-mapped-io.c
+
+  c-bridge:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install LLVM-MOS SDK
+        run: |
+          curl -L --fail -o /tmp/llvm-mos.tar.xz \
+            https://github.com/llvm-mos/llvm-mos-sdk/releases/latest/download/llvm-mos-linux.tar.xz
+          mkdir -p /tmp/llvm-mos
+          tar -xJf /tmp/llvm-mos.tar.xz -C /tmp/llvm-mos
+          echo "/tmp/llvm-mos/bin" >> "$GITHUB_PATH"
+
+      - name: Identify compiler
+        run: |
+          mos-clang --version
+          echo "Expected continuous-build identifier: $(sed -n '/^[^#]/p' toolchain/llvm-mos.version | head -n1)"
+
+      - name: Generate M4 assembly
+        run: |
+          chmod +x scripts/compile-c-to-asm.sh scripts/build-c-labs.sh scripts/build-optimization-lab.sh
+          scripts/build-c-labs.sh
+          scripts/build-optimization-lab.sh
+          test -s build/compiler-output/03-functions.s
+          test -s build/compiler-output/04-pointers.s
+          test -s build/compiler-output/05-arrays.s
+          test -s build/optimization/06-locals-O0.s
+          test -s build/optimization/06-locals-O2.s
+
+      - name: Inspect representative compiler output
+        run: |
+          echo '=== functions O1 ==='
+          cat build/compiler-output/03-functions.s
+          echo '=== pointers O1 ==='
+          cat build/compiler-output/04-pointers.s
+          echo '=== locals O0 ==='
+          cat build/optimization/06-locals-O0.s
+          echo '=== locals O2 ==='
+          cat build/optimization/06-locals-O2.s
