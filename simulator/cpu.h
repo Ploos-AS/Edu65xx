@@ -34,6 +34,8 @@ typedef struct {
     uint8_t sp;
     uint8_t p;
     uint8_t nmi_pending;
+    uint8_t waiting;
+    uint8_t stopped;
     uint8_t memory[EDU65XX_MEM_SIZE];
     edu65xx_via_t via;
     edu65xx_serial_t serial;
