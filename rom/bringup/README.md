@@ -59,3 +59,24 @@ Expected image SHA-256:
 ```
 
 A programmer verify PASS does not replace the later bus-level RESET/ROM qualification.
+
+
+## VIA Timer 1 IRQ image
+
+`via-irq.s` / `make_irq_image.c` provide the second physical qualification image.
+
+Generated file:
+
+```text
+build/via-irq.bin
+size:   16384 bytes
+SHA256: bd6a7367f353346060cc4852957968d211339d1689dbac6c9691ddc4eb2f314d
+RESET:  $C000
+IRQ:    $C01E
+```
+
+The image drives PB0 high, enables the VIA Timer 1 interrupt, starts a one-shot timer, executes `CLI/WAI`, acknowledges Timer 1 in the ISR, drives PB0 low and returns with `RTI`.
+
+The emulator qualification additionally checks the interrupt stack frame and IRQ vector before accepting the image.
+
+This is the image to use for the physical IRQ/vector logic-analyzer lab after the simpler GPIO ROM has passed.
