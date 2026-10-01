@@ -272,6 +272,66 @@ static void test_adc_sbc_addressing(void)
 
 
 
+
+static void assert_via_irq(edu65xx_cpu_t *cpu)
+{
+    cpu->via.ier |= EDU65XX_VIA_IFR_T1;
+    cpu->via.ifr |= EDU65XX_VIA_IFR_T1;
+    assert(edu65xx_via_irq(&cpu->via));
+}
+
+static void test_wai_and_stp_states(void)
+{
+    edu65xx_cpu_t cpu = {0};
+
+    /* With I=1, IRQ wakes WAI but does not vector. */
+    cpu.memory[0xC000] = 0xCB; /* WAI */
+    cpu.memory[0xC001] = 0xEA; /* NOP */
+    set_reset_vector(&cpu, 0xC000u);
+    edu65xx_cpu_reset(&cpu);
+    assert((cpu.p & EDU65XX_FLAG_I) != 0u);
+    assert(edu65xx_cpu_step(&cpu) == 0);
+    assert(cpu.waiting != 0u && cpu.pc == 0xC001u);
+    assert(edu65xx_cpu_step(&cpu) == 3); /* still waiting */
+    assert_via_irq(&cpu);
+    assert(edu65xx_cpu_step(&cpu) == 3); /* wake, IRQ masked */
+    assert(cpu.waiting == 0u && cpu.pc == 0xC001u);
+    cpu.via.ifr = 0u;
+    assert(edu65xx_cpu_step(&cpu) == 0); /* NOP */
+
+    /* With I=0, IRQ wakes WAI and takes the IRQ vector. */
+    cpu = (edu65xx_cpu_t){0};
+    cpu.memory[0xC000] = 0x58; /* CLI */
+    cpu.memory[0xC001] = 0xCB; /* WAI */
+    cpu.memory[0xC002] = 0xEA; /* return target */
+    cpu.memory[0xC100] = 0x40; /* RTI */
+    cpu.memory[0xFFFE] = 0x00; cpu.memory[0xFFFF] = 0xC1;
+    set_reset_vector(&cpu, 0xC000u);
+    edu65xx_cpu_reset(&cpu);
+    assert(edu65xx_cpu_step(&cpu) == 0);
+    assert(edu65xx_cpu_step(&cpu) == 0);
+    assert(cpu.waiting != 0u && cpu.pc == 0xC002u);
+    assert_via_irq(&cpu);
+    assert(edu65xx_cpu_step(&cpu) == 1);
+    assert(cpu.waiting == 0u && cpu.pc == 0xC100u);
+    cpu.via.ifr = 0u;
+    assert(edu65xx_cpu_step(&cpu) == 0);
+    assert(cpu.pc == 0xC002u);
+
+    /* STP is released only by reset in the functional model. */
+    cpu = (edu65xx_cpu_t){0};
+    cpu.memory[0xC000] = 0xDB; /* STP */
+    cpu.memory[0xC001] = 0xEA;
+    set_reset_vector(&cpu, 0xC000u);
+    edu65xx_cpu_reset(&cpu);
+    assert(edu65xx_cpu_step(&cpu) == 0);
+    assert(cpu.stopped != 0u && cpu.pc == 0xC001u);
+    assert(edu65xx_cpu_step(&cpu) == 4);
+    assert(cpu.pc == 0xC001u);
+    edu65xx_cpu_reset(&cpu);
+    assert(cpu.stopped == 0u && cpu.pc == 0xC000u);
+}
+
 static void test_w65c02_bit_manipulation(void)
 {
     edu65xx_cpu_t cpu = {0};
@@ -667,6 +727,7 @@ int main(void)
     test_adc_sbc_binary_flags();
     test_adc_sbc_decimal_flags();
     test_adc_sbc_addressing();
+    test_wai_and_stp_states();
     test_w65c02_bit_manipulation();
     test_brk_php_plp_and_indirect_jumps();
     test_remaining_conditional_branches();
