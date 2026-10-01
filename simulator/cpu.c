@@ -201,6 +201,7 @@ static void enter_interrupt(edu65xx_cpu_t *cpu, uint16_t vector)
     push8(cpu, (uint8_t)cpu->pc);
     push8(cpu, (uint8_t)((cpu->p & (uint8_t)~EDU65XX_FLAG_B) | EDU65XX_FLAG_U));
     cpu->p |= EDU65XX_FLAG_I;
+    cpu->p &= (uint8_t)~EDU65XX_FLAG_D; /* W65C02S enters binary mode on interrupt. */
     lo = edu65xx_read8(cpu, vector);
     hi = edu65xx_read8(cpu, (uint16_t)(vector + 1u));
     cpu->pc = (uint16_t)lo | ((uint16_t)hi << 8);
