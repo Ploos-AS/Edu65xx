@@ -17,8 +17,8 @@ This is the Rev A breadboard purchasing baseline. Manufacturer order codes are l
 | 1 each | sockets | CPU, VIA, RAM, ROM, decode ICs | required |
 | 10 | decoupling | 100 nF ceramic, one at each active IC/oscillator plus spare | selected |
 | 1 | bulk decoupling | 10 uF electrolytic at 5 V power entry | selected |
-| 1 | LED | first VIA output | required |
-| 1 | LED resistor | 1 kOhm for first PB0 indicator | selected |
+| 2 | LEDs | PB0 PASS/activity and PB1 FAIL for bring-up | selected |
+| 2 | LED resistors | 1 kOhm, one per PB0/PB1 indicator | selected |
 | 1 | RDY pull-up | 4.7 kOhm | selected |
 | 4 | control pull-ups | 10 kOhm for BE, SOB, NMIB and pre-VIA IRQB | selected |
 | 1 | RESET button | normally-open momentary switch to GND on DS1813 reset net | selected |
