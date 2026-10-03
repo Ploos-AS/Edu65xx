@@ -15,6 +15,9 @@ jobs:
       - name: Build and test
         run: make all
 
+      - name: Audit course structure
+        run: make course-audit
+
       - name: Rev A hardware design and ROM qualification
         run: make rev-a-package
 
