@@ -144,7 +144,7 @@ M8 prepares the software/course repository for a public release without weakenin
 - [x] make CC-BY-4.0 and CERN-OHL-P-2.0 verbatim legal texts an explicit release gate
 - [ ] add authoritative verbatim CC-BY-4.0 legal code
 - [ ] add authoritative verbatim CERN-OHL-P-2.0 license text
-- [ ] add course index/navigation and prerequisite map
+- [x] add course index/navigation and prerequisite map
 - [ ] audit lesson numbering, links and terminology
 - [ ] add student clean-room build/validation workflow
 - [ ] add release metadata, changelog and version policy
