@@ -130,3 +130,24 @@
 - [x] mixed C/assembly program
 - [x] emulator extension exercise
 - [x] optional W65C816 continuation design
+
+
+## M8 — Release and course quality
+
+**M8 status: IN PROGRESS**
+
+M8 prepares the software/course repository for a public release without weakening the physical M6 gate.
+
+- [x] refresh README to current architecture and milestone status
+- [x] define mixed-license applicability
+- [x] add MIT software license text
+- [x] make CC-BY-4.0 and CERN-OHL-P-2.0 verbatim legal texts an explicit release gate
+- [ ] add authoritative verbatim CC-BY-4.0 legal code
+- [ ] add authoritative verbatim CERN-OHL-P-2.0 license text
+- [ ] add course index/navigation and prerequisite map
+- [ ] audit lesson numbering, links and terminology
+- [ ] add student clean-room build/validation workflow
+- [ ] add release metadata, changelog and version policy
+- [ ] add publishing/QA handoff for course/documentation outputs
+- [ ] define M8 release candidate acceptance checklist
+- [ ] qualify release candidate in CI
