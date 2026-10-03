@@ -143,3 +143,8 @@ test: $(SIM_TEST) $(EMU_TEST) $(DEBUG_TEST) $(FRONT_PANEL_TEST)
 
 clean:
 	rm -rf build
+
+
+course-audit:
+	chmod +x scripts/audit-course.sh
+	./scripts/audit-course.sh
