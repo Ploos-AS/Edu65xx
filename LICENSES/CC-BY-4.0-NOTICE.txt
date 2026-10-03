@@ -1,0 +1,12 @@
+Creative Commons Attribution 4.0 International
+
+Edu65xx course and documentation material is licensed under the Creative
+Commons Attribution 4.0 International license (CC BY 4.0).
+
+SPDX-License-Identifier: CC-BY-4.0
+
+The authoritative legal code is published by Creative Commons at:
+https://creativecommons.org/licenses/by/4.0/legalcode
+
+A copy of the legal code should be distributed with release/publishing
+artifacts before a public course release is tagged.
