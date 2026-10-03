@@ -21,7 +21,7 @@ The full MIT text is in `LICENSES/MIT.txt`.
 
 Hardware design material under `hardware/` is licensed under the CERN Open Hardware Licence Version 2 — Permissive (CERN-OHL-P-2.0), unless a file states otherwise.
 
-The full license text is in `LICENSES/CERN-OHL-P-2.0.txt`.
+The repository notice is in `LICENSES/CERN-OHL-P-2.0-NOTICE.txt`. A public hardware release must also carry the authoritative verbatim CERN-OHL-P-2.0 text.
 
 ## Course and documentation — CC-BY-4.0
 
@@ -34,7 +34,7 @@ This includes:
 - prose documentation in the repository root
 - prose-only hardware documentation where no hardware design file is embedded
 
-The full legal code is in `LICENSES/CC-BY-4.0.txt`.
+The repository notice is in `LICENSES/CC-BY-4.0-NOTICE.txt`. A public course/documentation release must also carry the authoritative verbatim CC-BY-4.0 legal code.
 
 ## Mixed files
 
