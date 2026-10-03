@@ -2,98 +2,115 @@
 
 Edu65xx is a practical, open course for learning how a real computer works by building and programming a 65xx system from the ground up.
 
-The main hardware target is the **W65C02S**, with assembly first and C introduced later so students can directly connect high-level code to the machine instructions, registers, stack, memory and bus activity underneath.
+The primary CPU and physical target is the **W65C02S**. The course starts with assembly and machine behavior, then introduces C only after students can connect source code to registers, memory, stack, instructions and bus activity.
 
-## M0 goals
+## What Edu65xx includes
 
-M0 establishes the project structure and learning model:
+- a readable W65C02 simulator in C
+- a complete Edu65xx machine emulator
+- deterministic tests and independent W65C02 functional qualification
+- assembly-first course material
+- LLVM-MOS C/assembly labs
+- debugger, linker and ROM-monitor labs
+- Rev A breadboard design, ROMs and qualification procedures
+- an optional W65C816 continuation design
 
-- W65C02S as the primary CPU target
-- assembly first, then C
-- explicit ASM ↔ C comparisons throughout the course
-- a readable C-based simulator for teaching internals
-- a readable C-based emulator for running complete Edu65xx systems
-- physical breadboard hardware as a first-class target
-- future Edu65xx Trainer/Computer PCB
-- free/open tooling where practical
-- course material that does not require prior EduCPU or EduAVR knowledge
-
-## Learning model
-
-The same concepts are revisited at multiple abstraction levels:
+The central learning path is:
 
 ```text
 C source
    ↓
-compiler
+compiler / assembler / linker
    ↓
-65C02 assembly
+65C02 machine code
    ↓
-machine code
+CPU state and instructions
    ↓
-CPU state changes
+bus accesses
    ↓
-bus cycles
+RAM / ROM / VIA / serial I/O
    ↓
-RAM / ROM / I/O
+physical signals
 ```
 
-Students should be able to answer not only *what* a program does, but also *how the CPU executes it*.
+Students should be able to explain not only *what* a program does, but *how the machine makes it happen*.
 
-## Project components
+## Repository map
 
 - `course/` — lessons and exercises
 - `examples/asm/` — assembly examples
-- `examples/c/` — C examples matching the assembly material
-- `simulator/` — pedagogical W65C02 simulator in readable C
-- `emulator/` — complete Edu65xx system emulator in readable C
-- `hardware/` — breadboard, schematics and future PCB material
-- `docs/` — architecture, conventions and project documentation
+- `examples/c/` — C examples and mixed-language labs
+- `simulator/` — pedagogical W65C02 CPU and devices
+- `emulator/` — complete machine, debugger and host-side extensions
+- `rom/` — monitor and physical qualification ROM sources
+- `hardware/` — Rev A breadboard design and future Trainer material
+- `toolchain/` — pinned toolchain inputs and linker material
+- `docs/` — architecture and project contracts
+- `scripts/` — reproducible build/qualification helpers
+
+## Current status
+
+Software milestones **M0-M5 and M7 are complete**.
+
+**M6 — Physical computer** remains intentionally in progress. The Rev A design, BOM, schematic contracts, bring-up ROMs, qualification procedure and CI package are complete, but physical PASS requires a real breadboard build and captured RESET/ROM/RAM/VIA/IRQ evidence.
+
+See [`ROADMAP.md`](ROADMAP.md) for the exact gates.
 
 ## Hardware direction
 
-The first physical platform should remain intentionally transparent:
+The first physical platform remains deliberately transparent:
 
 ```text
 W65C02S
   ├── address bus
   ├── data bus
   ├── R/W
-  ├── clock/reset
+  ├── PHI2 / reset / interrupt signals
   ├── ROM
   ├── RAM
-  └── memory-mapped I/O
+  └── W65C22 VIA
 ```
 
-No hidden microcontroller should replace the architectural concepts the student is supposed to learn.
+No hidden microcontroller replaces the architectural concepts the student is meant to observe.
 
-## Planned progression
+The Trainer PCB is deliberately gated on successful breadboard qualification.
 
-1. CPU registers and execution model
-2. first assembly program
-3. machine code and opcodes
-4. clock and reset
-5. address and data bus
-6. ROM and reset vectors
-7. RAM, zero page and stack
-8. address decoding
-9. memory-mapped I/O
-10. interrupts and timers
-11. serial/terminal I/O
-12. structured assembly
-13. C on 65C02
-14. compare compiler output with handwritten assembly
-15. simulator internals
-16. emulator internals
-17. complete Edu65xx computer
-18. optional W65C816 continuation
+## Reproduce the software qualification
 
-## Status
+A host with a C compiler and Make can run the core tests:
 
-**M0 — project bootstrap**
+```sh
+make all
+```
 
-See [`ROADMAP.md`](ROADMAP.md).
+The Rev A software/design qualification package is built with:
 
-## License
+```sh
+make rev-a-package
+```
 
-Software source is intended to use the MIT License. Hardware design files are intended to use CERN-OHL-P-2.0. Course/documentation licensing will be documented separately.
+LLVM-MOS-dependent C/linker labs use the SDK version pinned in `toolchain/llvm-mos.version`. CI installs that exact release.
+
+## Course progression
+
+The course grows from CPU fundamentals through memory, I/O and interrupts into C, emulator internals, debugging, linking and larger multi-module programs.
+
+Start with:
+
+```text
+course/00-learning-path.md
+```
+
+The optional W65C816 continuation begins only after the W65C02 path and does not change the W65C02 Rev A baseline.
+
+## Licensing
+
+Edu65xx is a mixed-license repository. The license follows the type of material:
+
+- software, simulator/emulator code, scripts and ROM source: **MIT**
+- hardware design files: **CERN-OHL-P-2.0**
+- course and documentation: **CC-BY-4.0**
+
+See [`LICENSES.md`](LICENSES.md) for the applicability rules and license texts/references.
+
+Third-party material keeps its own license. The external Klaus W65C02 qualification binary is downloaded by CI from a pinned upstream revision and is not vendored into this repository.
